@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { Select } from '@react-three/postprocessing';
 import { Experience } from '../../types';
 import { useStore, SelectedExperience } from '../../store';
+import { shallow } from 'zustand/shallow';
 import Satellite from './Satellite';
 
 interface PlanetProps {
@@ -23,10 +24,8 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const hoveredExperience = useStore((state) => state.hoveredExperience);
 
   // Select action creators separately for stable references
-  const setSelectedExperience = useStore((state) => state.setSelectedExperience);
+  const selectExperience = useStore((state) => state.selectExperience);
   const setHoveredExperience = useStore((state) => state.setHoveredExperience);
-  const setCameraTarget = useStore((state) => state.setCameraTarget);
-  const setCameraState = useStore((state) => state.setCameraState);
 
   const [isHovered, setIsHovered] = useState(false);
   const isSelected = selectedExperience?.data.id === experience.id;
@@ -36,11 +35,11 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const color = useMemo(() => {
     switch (experience.type) {
       case 'job':
-        return new THREE.Color('#ff8c00'); // Warmer for jobs
+        return new THREE.Color('#ff8c00'); // Warmer color for jobs
       case 'education':
-        return new THREE.Color('#6495ed'); // Cooler for education
+        return new THREE.Color('#6495ed'); // Cooler color for education
       case 'project':
-        return new THREE.Color('#98fb98'); // Neon for projects
+        return new THREE.Color('#98fb98'); // Neon/stylized for projects
       default:
         return new THREE.Color('white');
     }
@@ -53,7 +52,6 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
 
     if (planetRef.current) {
       const selection: SelectedExperience = { type: 'planet', data: experience };
-      setSelectedExperience(selection);
 
       const planetPosition = new THREE.Vector3();
       planetRef.current.getWorldPosition(planetPosition);
@@ -61,10 +59,10 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       const cameraOffset = new THREE.Vector3(0, experience.radius * 2, experience.radius * 5);
       const targetPosition = planetPosition.clone().add(cameraOffset);
       
-      setCameraTarget(targetPosition, planetPosition);
-      setCameraState('transition');
+      // Use the atomic action to update all related state at once
+      selectExperience(selection, targetPosition, planetPosition);
     }
-  }, [experience, selectedExperience, setSelectedExperience, setCameraTarget, setCameraState]);
+  }, [experience, selectedExperience, selectExperience]);
 
   const handlePointerOver = useCallback((event: any) => {
     event.stopPropagation();
@@ -81,6 +79,7 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
     setHoveredExperience(null);
   }, [setHoveredExperience]);
   
+  // Create a single, reusable vector for scaling
   const targetScaleVector = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, delta) => {
@@ -109,17 +108,26 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       // Update accumulated angle to prevent "jump" when speed changes
       angleRef.current += speed * delta;
       
-      groupRef.current.position.x = Math.sin(angleRef.current) * experience.distanceFromStar;
-      groupRef.current.position.z = Math.cos(angleRef.current) * experience.distanceFromStar;
+      const x = Math.sin(angleRef.current) * experience.distanceFromStar;
+      const z = Math.cos(angleRef.current) * experience.distanceFromStar;
+      const inclination = experience.inclination || 0;
+
+      // Apply inclination (rotate around X axis)
+      groupRef.current.position.set(
+        x,
+        Math.sin(inclination) * z,
+        Math.cos(inclination) * z
+      );
     }
 
     if (planetRef.current) {
+      // Self-rotation
       planetRef.current.rotation.y += 0.5 * delta;
       
       // Hover scale effect (1 -> 1.1)
       const targetScale = isHovered ? 1.1 : 1;
-      targetScaleVector.set(targetScale, targetScale, targetScale);
-      planetRef.current.scale.lerp(targetScaleVector, delta * 8);
+      targetScaleVector.set(targetScale, targetScale, targetScale); // Update reusable vector
+      planetRef.current.scale.lerp(targetScaleVector, delta * 8); // Lerp to stable vector
     }
   });
 
@@ -160,11 +168,12 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
           )}
         </mesh>
       </Select>
-      {experience.satellites && experience.satellites.map((sat) => (
+      {experience.satellites && experience.satellites.map((sat, index) => (
         <Satellite
           key={sat.id}
           satellite={sat}
           parentPlanetId={experience.id}
+          index={index}
         />
       ))}
     </group>
@@ -172,6 +181,3 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
 };
 
 export default Planet;
-
-
-

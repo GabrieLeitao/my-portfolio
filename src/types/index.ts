@@ -22,6 +22,7 @@ export interface Experience {
   radius: number; // For rendering size of the planet
   distanceFromStar: number; // Distance from the central star
   orbitalSpeed: number; // Orbital speed around the star
+  inclination?: number; // Optional orbital inclination in radians
   satellites?: Satellite[];
 }
 

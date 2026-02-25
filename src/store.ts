@@ -15,8 +15,11 @@ interface AppState {
   // Selection and hover state
   selectedExperience: SelectedExperience | null;
   hoveredExperience: SelectedExperience | null;
+  aboutOpen: boolean;
+  selectExperience: (experience: SelectedExperience | null, cameraPos?: THREE.Vector3, lookAt?: THREE.Vector3) => void;
   setSelectedExperience: (experience: SelectedExperience | null) => void;
   setHoveredExperience: (experience: SelectedExperience | null) => void;
+  setAboutOpen: (open: boolean) => void;
 
   // Motion control
   motionState: MotionState;
@@ -34,12 +37,33 @@ export const useStore = create<AppState>((set) => ({
   // Initial state
   selectedExperience: null,
   hoveredExperience: null,
+  aboutOpen: false,
   motionState: 'idle',
   cameraState: 'free',
   cameraTargetPosition: new THREE.Vector3(0, 20, 50), // Initial overview position
   cameraLookAt: new THREE.Vector3(0, 0, 0), // Initial look-at target
 
   // Actions
+  selectExperience: (experience, cameraPos?, lookAt?) => set((state) => {
+    if (experience === null) {
+      return { 
+        selectedExperience: null, 
+        cameraState: 'exit',
+        cameraTargetPosition: new THREE.Vector3(0, 20, 50),
+        cameraLookAt: new THREE.Vector3(0, 0, 0),
+        motionState: 'idle'
+      };
+    }
+    
+    return {
+      selectedExperience: experience,
+      motionState: 'selected',
+      aboutOpen: false,
+      cameraState: 'transition',
+      cameraTargetPosition: cameraPos || state.cameraTargetPosition,
+      cameraLookAt: lookAt || state.cameraLookAt
+    };
+  }),
   setSelectedExperience: (experience) => set((state) => {
     if (experience === null) {
       return { 
@@ -53,7 +77,8 @@ export const useStore = create<AppState>((set) => ({
     if (state.selectedExperience?.data.id !== experience.data.id) {
       return { 
         selectedExperience: experience,
-        motionState: 'selected'
+        motionState: 'selected',
+        aboutOpen: false // Close about if something is selected
       };
     }
     return {};
@@ -68,6 +93,13 @@ export const useStore = create<AppState>((set) => ({
     }
     return {};
   }),
+  setAboutOpen: (open) => set((state) => ({ 
+    aboutOpen: open,
+    selectedExperience: open ? null : state.selectedExperience,
+    cameraState: open ? 'exit' : state.cameraState,
+    cameraTargetPosition: open ? new THREE.Vector3(0, 20, 50) : state.cameraTargetPosition,
+    cameraLookAt: open ? new THREE.Vector3(0, 0, 0) : state.cameraLookAt
+  })),
   setMotionState: (state) => set({ motionState: state }),
   setCameraState: (state) => set({ cameraState: state }),
   setCameraTarget: (position, lookAt) => set({

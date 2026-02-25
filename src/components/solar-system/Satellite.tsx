@@ -1,18 +1,18 @@
-// src/components/solar-system/Satellite.tsx
 import React, { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { Select } from '@react-three/postprocessing';
 import { Satellite as SatelliteType } from '../../types';
 import { useStore } from '../../store';
 
 interface SatelliteProps {
   satellite: SatelliteType;
   parentPlanetId: string;
+  index: number;
 }
 
-const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId }) => {
+const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId, index }) => {
   const satelliteRef = useRef<THREE.Mesh>(null);
-  const angleRef = useRef(Math.random() * Math.PI * 2);
   
   // Select state values individually for stability
   const motionState = useStore((state) => state.motionState);
@@ -21,32 +21,36 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId }) => {
   const geometry = useMemo(() => new THREE.SphereGeometry(satellite.radius, 16, 16), [satellite.radius]);
   const isParentSelected = selectedExperience?.type === 'planet' && selectedExperience.data.id === parentPlanetId;
 
+  // Use higher base speed for visibility
+  const angleRef = useRef(index * (Math.PI * 2 / 3));
   const targetPosition = useMemo(() => new THREE.Vector3(), []);
   const isInitialized = useRef(false);
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     if (satelliteRef.current) {
-      let currentSpeed = satellite.speed * 5; // Base speed multiplier
+      let currentSpeed = satellite.speed * 20; // Increased speed multiplier
       let targetDistance = satellite.distanceFromPlanet;
 
       if (motionState === 'selected') {
-        currentSpeed *= 0.1; // Slow down satellites too
+        currentSpeed *= 0.1;
         if (isParentSelected) {
-          currentSpeed = 0; // Freeze if parent selected
-          targetDistance *= 1.5; // Expand
+          currentSpeed = 0;
+          targetDistance *= 1.4;
         }
       } else if (motionState === 'hover') {
-        currentSpeed *= 0.3; // Slow down on hover
+        currentSpeed *= 0.3;
       }
       
       angleRef.current += currentSpeed * delta;
 
-      // Local coordinates (relative to planet group)
-      targetPosition.set(
-        Math.sin(angleRef.current) * targetDistance,
-        0,
-        Math.cos(angleRef.current) * targetDistance
-      );
+      // Simple orbital calculation
+      const x = Math.sin(angleRef.current) * targetDistance;
+      const z = Math.cos(angleRef.current) * targetDistance;
+      
+      // Slight variation in Y for each satellite
+      const y = Math.sin(index * 1.5) * (targetDistance * 0.2);
+
+      targetPosition.set(x, y, z);
 
       if (!isInitialized.current) {
         satelliteRef.current.position.copy(targetPosition);
@@ -55,22 +59,24 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId }) => {
         satelliteRef.current.position.lerp(targetPosition, delta * 5);
       }
       
-      satelliteRef.current.rotation.y += 0.5 * delta;
+      satelliteRef.current.rotation.y += delta;
     }
   });
 
-  const handleClick = (event: any) => {
-    event.stopPropagation();
-  };
-
   return (
-    <mesh
-      ref={satelliteRef}
-      geometry={geometry}
-      onClick={handleClick}
-    >
-      <meshStandardMaterial color="#c0c0c0" emissive="#444" />
-    </mesh>
+    <Select enabled={isParentSelected}>
+      <mesh
+        ref={satelliteRef}
+        geometry={geometry}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <meshStandardMaterial 
+          color="#aaa" 
+          emissive="#ffffff" 
+          emissiveIntensity={isParentSelected ? 0.5 : 0.1} 
+        />
+      </mesh>
+    </Select>
   );
 };
 

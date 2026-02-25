@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
+import * as THREE from 'three';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import { EffectComposer, SelectiveBloom, DepthOfField, Selection } from '@react-three/postprocessing';
 import Star from './Star';
@@ -12,11 +13,11 @@ import { useStore } from '../../store';
 const SceneContent: React.FC = () => {
   const isSelected = useStore((state) => state.selectedExperience !== null);
   const dofRef = useRef<any>(null);
+  const bloomRef = useRef<any>(null);
 
   useFrame((_, delta) => {
     if (dofRef.current) {
       const targetBokeh = isSelected ? 2 : 0;
-      // Smoothly transition the blur
       dofRef.current.bokehScale = THREE.MathUtils.lerp(
         dofRef.current.bokehScale,
         targetBokeh,
@@ -27,7 +28,7 @@ const SceneContent: React.FC = () => {
 
   return (
     <Selection>
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.6} />
       <Stars radius={200} depth={50} count={5000} factor={4} saturation={0} fade />
 
       <TimelineGrid experiences={experiences} />
@@ -41,12 +42,14 @@ const SceneContent: React.FC = () => {
         />
       ))}
       
-      <EffectComposer autoClear={false}>
+      <EffectComposer>
         <SelectiveBloom
-          luminanceThreshold={0.1}
+          ref={bloomRef}
+          selectionLayer={10}
+          luminanceThreshold={0.01}
           luminanceSmoothing={0.9}
           height={300}
-          intensity={2.0}
+          intensity={1.5}
         />
         <DepthOfField
           ref={dofRef}
@@ -70,7 +73,6 @@ const SolarSystem: React.FC = () => {
   );
 };
 
-import * as THREE from 'three';
 export default SolarSystem;
 
 

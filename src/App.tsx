@@ -5,6 +5,7 @@ import Layout from './components/ui/Layout';
 import Navigation from './components/ui/Navigation';
 import ExperienceDetail from './components/ui/ExperienceDetail';
 import SolarSystem from './components/solar-system/SolarSystem';
+import About from './components/ui/About';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Navigation />
       <SolarSystem />
       <ExperienceDetail />
+      <About />
     </Layout>
   );
 }

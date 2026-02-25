@@ -2,6 +2,38 @@
 
 import { Experience } from '../types';
 
+export const personalInfo = {
+  name: 'Your Name',
+  title: 'Software Engineer | Space Enthusiast',
+  email: 'your.email@example.com',
+  phone: '+1 (555) 000-0000',
+  location: 'City, Country',
+  github: 'https://github.com/your-username',
+  linkedin: 'https://linkedin.com/in/your-username',
+  languages: [
+    { name: 'English', level: 'Native' },
+    { name: 'Portuguese', level: 'Native' },
+    { name: 'Spanish', level: 'Intermediate' }
+  ]
+};
+
+export const skills = {
+  programmingLanguages: [
+    { name: 'TypeScript/JavaScript', strength: 95 },
+    { name: 'Python', strength: 90 },
+    { name: 'C++', strength: 80 },
+    { name: 'Java', strength: 75 },
+    { name: 'Go', strength: 60 }
+  ],
+  frameworks: ['React', 'Node.js', 'FastAPI', 'Three.js', 'Express'],
+  tools: ['Git', 'Docker', 'Kubernetes', 'AWS', 'Linux'],
+  otherQualifications: [
+    'Certified Cloud Practitioner (AWS)',
+    'Advanced Problem Solving Certificate',
+    'Open Source Contributor of the Year 2025'
+  ]
+};
+
 export const experiences: Experience[] = [
   {
     id: 'star-2024-present',
@@ -15,6 +47,7 @@ export const experiences: Experience[] = [
     radius: 0.9, // Represents the size of the "planet"
     distanceFromStar: 8, // Distance from the central star (closer to present)
     orbitalSpeed: 0.0012, 
+    inclination: 0.05,
     satellites: [
       {
         id: 'current-feature-a',
@@ -48,6 +81,7 @@ export const experiences: Experience[] = [
     radius: 0.7,
     distanceFromStar: 15, // Further from star for older experiences
     orbitalSpeed: 0.0008,
+    inclination: -0.03,
     satellites: [
       {
         id: 'prev-project-x',
@@ -71,6 +105,7 @@ export const experiences: Experience[] = [
     radius: 0.6,
     distanceFromStar: 20, // Even further
     orbitalSpeed: 0.0007,
+    inclination: 0.02,
     satellites: [
       {
         id: 'thesis-project',
@@ -103,6 +138,7 @@ export const experiences: Experience[] = [
     radius: 0.5,
     distanceFromStar: 12,
     orbitalSpeed: 0.001,
+    inclination: -0.04,
     satellites: [],
   },
   {
@@ -116,6 +152,7 @@ export const experiences: Experience[] = [
     radius: 0.75,
     distanceFromStar: 5,
     orbitalSpeed: 0.0015,
+    inclination: 0.06,
     satellites: [
         {
             id: 'portfolio-design',

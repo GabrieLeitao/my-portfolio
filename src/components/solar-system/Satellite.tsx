@@ -28,17 +28,19 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId, index 
 
   useFrame((_, delta) => {
     if (satelliteRef.current) {
-      let currentSpeed = satellite.speed * 20; // Increased speed multiplier
-      let targetDistance = satellite.distanceFromPlanet;
+      let speedMultiplier = 1.0;
 
       if (motionState === 'selected') {
-        currentSpeed *= 0.1;
-        if (isParentSelected) {
-          currentSpeed = 0;
-          targetDistance *= 1.4;
-        }
+        speedMultiplier = 0.05;
       } else if (motionState === 'hover') {
-        currentSpeed *= 0.3;
+        speedMultiplier = 0.3;
+      }
+
+      let currentSpeed = satellite.speed * 30 * speedMultiplier;
+      let targetDistance = satellite.distanceFromPlanet;
+
+      if (motionState === 'selected' && isParentSelected) {
+        targetDistance *= 1.4; // Still expand if parent selected
       }
       
       angleRef.current += currentSpeed * delta;

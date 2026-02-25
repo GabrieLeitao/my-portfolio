@@ -22,6 +22,7 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const motionState = useStore((state) => state.motionState);
   const selectedExperience = useStore((state) => state.selectedExperience);
   const hoveredExperience = useStore((state) => state.hoveredExperience);
+  const aboutOpen = useStore((state) => state.aboutOpen);
 
   // Select action creators separately for stable references
   const selectExperience = useStore((state) => state.selectExperience);
@@ -84,25 +85,17 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
 
   useFrame((_, delta) => {
     const isHoveredInStore = hoveredExperience?.data.id === experience.id;
-    const isAnySelected = selectedExperience !== null;
-    const isAnyHovered = hoveredExperience !== null;
 
-    // Determine current speed
-    let speed = experience.orbitalSpeed * 50; // Base multiplier for visible speed
+    // Determine current speed multiplier based on global motionState ONLY
+    let speedMultiplier = 1.0;
     
-    // 3) maybe all orbits could slow down when we enter a planet or we hover also
-    if (isAnySelected) {
-      speed *= 0.05; // Significant slow down for all if something is selected
-    } else if (isAnyHovered) {
-      speed *= 0.3; // General slow down if hovering anything
+    if (motionState === 'selected') {
+      speedMultiplier = 0.05; // Global slowdown for everything
+    } else if (motionState === 'hover') {
+      speedMultiplier = 0.3; // Global slowdown for everything
     }
 
-    // Individual override
-    if (isSelected) {
-      speed = 0; // Freeze if selected
-    } else if (isHoveredInStore) {
-      speed *= 0.1; // Extra slow down for the hovered one
-    }
+    let speed = experience.orbitalSpeed * 60 * speedMultiplier;
 
     if (groupRef.current) {
       // Update accumulated angle to prevent "jump" when speed changes
@@ -146,23 +139,23 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
             emissive={color}
             emissiveIntensity={isHovered ? 0.6 : (isSelected ? 1.2 : 0.2)}
           />
-          {isHovered && !isSelected && (
-            <Html distanceFactor={10} pointerEvents="none">
+          {isHovered && !isSelected && !aboutOpen && (
+            <Html distanceFactor={15} pointerEvents="none">
               <div className="tooltip" style={{ 
-                background: 'rgba(0,0,0,0.85)', 
+                background: 'rgba(0,0,0,0.9)', 
                 color: 'white', 
-                padding: '12px', 
-                borderRadius: '8px',
-                border: `1px solid ${color.getStyle()}`,
+                padding: '16px', 
+                borderRadius: '10px',
+                border: `2px solid ${color.getStyle()}`,
                 width: 'max-content',
-                maxWidth: '250px',
-                transform: 'translate(10px, 10px)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                maxWidth: '350px',
+                transform: 'translate(15px, 15px)',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.7)',
                 fontFamily: 'sans-serif'
               }}>
-                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1em' }}>{experience.name}</h3>
-                <p style={{ margin: '0 0 8px 0', opacity: 0.8, fontSize: '0.9em' }}>{experience.startDate} - {experience.endDate}</p>
-                <p style={{ margin: 0, fontSize: '0.85em', lineHeight: '1.4' }}>{experience.description}</p>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '1.4em' }}>{experience.name}</h3>
+                <p style={{ margin: '0 0 10px 0', opacity: 0.8, fontSize: '1.1em' }}>{experience.startDate} - {experience.endDate}</p>
+                <p style={{ margin: 0, fontSize: '1.0em', lineHeight: '1.5' }}>{experience.description}</p>
               </div>
             </Html>
           )}

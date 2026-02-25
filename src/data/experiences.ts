@@ -45,8 +45,8 @@ export const experiences: Experience[] = [
     position: 'Software Engineer',
     technologies: ['React', 'TypeScript', 'Three.js', '@react-three/fiber'],
     radius: 0.9, // Represents the size of the "planet"
-    distanceFromStar: 8, // Distance from the central star (closer to present)
-    orbitalSpeed: 0.0012, 
+    distanceFromStar: 12, // Distance from the central star (closer to present)
+    orbitalSpeed: 0.00115, 
     inclination: 0.05,
     satellites: [
       {
@@ -79,8 +79,8 @@ export const experiences: Experience[] = [
     position: 'Frontend Developer',
     technologies: ['Angular', 'RxJS', 'Node.js'],
     radius: 0.7,
-    distanceFromStar: 15, // Further from star for older experiences
-    orbitalSpeed: 0.0008,
+    distanceFromStar: 22, // Further from star for older experiences
+    orbitalSpeed: 0.00085,
     inclination: -0.03,
     satellites: [
       {
@@ -103,8 +103,8 @@ export const experiences: Experience[] = [
     endDate: '2022-06-30',
     technologies: ['Java', 'Python', 'C++'], // Representing skills acquired
     radius: 0.6,
-    distanceFromStar: 20, // Even further
-    orbitalSpeed: 0.0007,
+    distanceFromStar: 30, // Even further
+    orbitalSpeed: 0.00072,
     inclination: 0.02,
     satellites: [
       {
@@ -136,8 +136,8 @@ export const experiences: Experience[] = [
     endDate: '2023-08-31',
     technologies: ['JavaScript', 'Vue.js'],
     radius: 0.5,
-    distanceFromStar: 12,
-    orbitalSpeed: 0.001,
+    distanceFromStar: 18,
+    orbitalSpeed: 0.00093,
     inclination: -0.04,
     satellites: [],
   },
@@ -150,7 +150,7 @@ export const experiences: Experience[] = [
     endDate: 'Present',
     technologies: ['React', 'TypeScript', 'Three.js', '@react-three/fiber', '@react-three/drei'],
     radius: 0.75,
-    distanceFromStar: 5,
+    distanceFromStar: 7,
     orbitalSpeed: 0.0015,
     inclination: 0.06,
     satellites: [

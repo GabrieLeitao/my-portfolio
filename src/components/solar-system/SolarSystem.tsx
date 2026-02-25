@@ -14,6 +14,7 @@ const SceneContent: React.FC = () => {
   const isSelected = useStore((state) => state.selectedExperience !== null);
   const dofRef = useRef<any>(null);
   const bloomRef = useRef<any>(null);
+  const { scene } = useThree();
 
   useFrame((_, delta) => {
     if (dofRef.current) {
@@ -23,6 +24,16 @@ const SceneContent: React.FC = () => {
         targetBokeh,
         delta * 2
       );
+    }
+
+    if (bloomRef.current) {
+      const lights: THREE.Light[] = [];
+      scene.traverse((obj) => {
+        if ((obj as any).isLight) lights.push(obj as THREE.Light);
+      });
+      if (lights.length > 0) {
+        bloomRef.current.lights = lights;
+      }
     }
   });
 

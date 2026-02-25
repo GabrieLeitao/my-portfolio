@@ -1,0 +1,19 @@
+/* src/styles/variables.css */
+
+:root {
+  --color-star-primary: #FFD700; /* Gold */
+  --color-star-secondary: #FF4500; /* OrangeRed */
+  --color-planet-job: #FF69B4; /* Hot Pink */
+  --color-planet-education: #87CEEB; /* Sky Blue */
+  --color-planet-project: #90EE90; /* Light Green */
+  --color-satellite-primary: #D3D3D3; /* Light Gray */
+  --color-background-dark: #000000; /* Black */
+  --color-text-light: #FFFFFF; /* White */
+  --color-overlay-background: rgba(0, 0, 0, 0.8);
+
+  --font-family-primary: 'Arial', sans-serif;
+  --font-size-base: 16px;
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 24px;
+}

@@ -1,26 +1,20 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import './App.css'; // Keep this import, though the file is now empty
+
+import Layout from './components/ui/Layout';
+import Navigation from './components/ui/Navigation';
+import ExperienceDetail from './components/ui/ExperienceDetail';
+import SolarSystem from './components/solar-system/SolarSystem';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Layout>
+      <Navigation />
+      <SolarSystem />
+      <ExperienceDetail />
+    </Layout>
   );
 }
 
 export default App;
+

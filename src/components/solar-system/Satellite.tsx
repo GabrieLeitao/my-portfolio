@@ -22,6 +22,7 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId }) => {
   const isParentSelected = selectedExperience?.type === 'planet' && selectedExperience.data.id === parentPlanetId;
 
   const targetPosition = useMemo(() => new THREE.Vector3(), []);
+  const isInitialized = useRef(false);
 
   useFrame(({ clock }, delta) => {
     if (satelliteRef.current) {
@@ -47,7 +48,13 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId }) => {
         Math.cos(angleRef.current) * targetDistance
       );
 
-      satelliteRef.current.position.lerp(targetPosition, delta * 5);
+      if (!isInitialized.current) {
+        satelliteRef.current.position.copy(targetPosition);
+        isInitialized.current = true;
+      } else {
+        satelliteRef.current.position.lerp(targetPosition, delta * 5);
+      }
+      
       satelliteRef.current.rotation.y += 0.5 * delta;
     }
   });

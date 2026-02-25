@@ -48,6 +48,9 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
 
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
+    // Do not allow selection if something is already selected
+    if (selectedExperience) return;
+
     if (planetRef.current) {
       const selection: SelectedExperience = { type: 'planet', data: experience };
       setSelectedExperience(selection);
@@ -61,13 +64,16 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       setCameraTarget(targetPosition, planetPosition);
       setCameraState('transition');
     }
-  }, [experience, setSelectedExperience, setCameraTarget, setCameraState]);
+  }, [experience, selectedExperience, setSelectedExperience, setCameraTarget, setCameraState]);
 
   const handlePointerOver = useCallback((event: any) => {
     event.stopPropagation();
+    // Do not show hover effects if something is selected
+    if (selectedExperience) return;
+    
     setIsHovered(true);
     setHoveredExperience({ type: 'planet', data: experience });
-  }, [experience, setHoveredExperience]);
+  }, [experience, selectedExperience, setHoveredExperience]);
 
   const handlePointerOut = useCallback((event: any) => {
     event.stopPropagation();

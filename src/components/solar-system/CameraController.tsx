@@ -63,6 +63,8 @@ const CameraController: React.FC = () => {
       dampingFactor={0.05}
       rotateSpeed={0.5}
       zoomSpeed={0.8}
+      minDistance={5}
+      maxDistance={100}
     />
   );
 };

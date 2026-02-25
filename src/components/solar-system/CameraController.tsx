@@ -24,21 +24,18 @@ const CameraController: React.FC = () => {
     if (!controlsRef.current) return;
 
     if (cameraState === 'transition' || cameraState === 'exit') {
-      // Smoothly interpolate camera position to the target
-      // Increased speed slightly for more responsiveness, but still smooth
-      const lerpSpeed = cameraState === 'exit' ? 2.0 : 3.0;
+      // Transition back to overview is faster for better responsiveness
+      const lerpSpeed = cameraState === 'exit' ? 4.0 : 3.0;
       camera.position.lerp(cameraTargetPosition, lerpSpeed * delta);
       
-      // Smoothly interpolate the controls' target (what the camera looks at)
       controlsRef.current.target.lerp(cameraLookAt, lerpSpeed * delta);
-      
       controlsRef.current.update();
 
-      // Check if we are close enough to the target to switch state
+      // Increased threshold to 0.5 for faster handoff to user controls
       const dist = camera.position.distanceTo(cameraTargetPosition);
       const targetDist = controlsRef.current.target.distanceTo(cameraLookAt);
       
-      if (dist < 0.1 && targetDist < 0.1) {
+      if (dist < 0.5 && targetDist < 0.5) {
         if (cameraState === 'transition') {
           setCameraState('locked');
         } else if (cameraState === 'exit') {
@@ -56,9 +53,8 @@ const CameraController: React.FC = () => {
   return (
     <OrbitControls
       ref={controlsRef}
-      // Enable controls in free and locked states
-      // In locked state, it allows orbiting around the selected planet
-      enabled={cameraState === 'free' || cameraState === 'locked'}
+      // Enable controls in free, locked, and exit states to maximize responsiveness
+      enabled={cameraState === 'free' || cameraState === 'locked' || cameraState === 'exit'}
       enableDamping
       dampingFactor={0.05}
       rotateSpeed={0.5}

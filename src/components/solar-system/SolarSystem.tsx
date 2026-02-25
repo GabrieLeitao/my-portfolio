@@ -56,6 +56,7 @@ const SceneContent: React.FC = () => {
       <EffectComposer>
         <SelectiveBloom
           ref={bloomRef}
+          lights={[]} // Pass empty array to suppress initial warning
           selectionLayer={10}
           luminanceThreshold={0.01}
           luminanceSmoothing={0.9}

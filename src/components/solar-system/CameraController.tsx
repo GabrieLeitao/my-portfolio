@@ -25,17 +25,17 @@ const CameraController: React.FC = () => {
 
     if (cameraState === 'transition' || cameraState === 'exit') {
       // Transition back to overview is faster for better responsiveness
-      const lerpSpeed = cameraState === 'exit' ? 4.0 : 3.0;
+      const lerpSpeed = cameraState === 'exit' ? 6.0 : 3.0;
       camera.position.lerp(cameraTargetPosition, lerpSpeed * delta);
       
       controlsRef.current.target.lerp(cameraLookAt, lerpSpeed * delta);
       controlsRef.current.update();
 
-      // Increased threshold to 0.5 for faster handoff to user controls
+      // Increased threshold to 2.0 for faster handoff to user controls
       const dist = camera.position.distanceTo(cameraTargetPosition);
       const targetDist = controlsRef.current.target.distanceTo(cameraLookAt);
       
-      if (dist < 0.5 && targetDist < 0.5) {
+      if (dist < 2.0 && targetDist < 2.0) {
         if (cameraState === 'transition') {
           setCameraState('locked');
         } else if (cameraState === 'exit') {
@@ -55,6 +55,13 @@ const CameraController: React.FC = () => {
       ref={controlsRef}
       // Enable controls in free, locked, and exit states to maximize responsiveness
       enabled={cameraState === 'free' || cameraState === 'locked' || cameraState === 'exit'}
+      onStart={() => {
+        // If the user starts interacting during an exit transition, 
+        // immediately give them full control.
+        if (cameraState === 'exit') {
+          setCameraState('free');
+        }
+      }}
       enableDamping
       dampingFactor={0.05}
       rotateSpeed={0.5}

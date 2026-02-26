@@ -59,18 +59,20 @@ const CameraController: React.FC = () => {
         }
       }
     } else if (cameraState === 'locked') {
-      // In locked mode, keep the target perfectly centered on the moving planet
+      // In locked mode, strictly maintain the target and position
+      // This prevents the camera from being "free" or drifting
+      camera.position.copy(cameraTargetPosition);
       controlsRef.current.target.copy(currentLookAt);
       controlsRef.current.update();
-      // WE DO NOT LERP POSITION HERE - this allows the user to rotate/zoom freely
     }
   });
 
   return (
     <OrbitControls
       ref={controlsRef}
-      // Enable controls in free, locked, and exit states to maximize responsiveness
-      enabled={cameraState === 'free' || cameraState === 'locked' || cameraState === 'exit'}
+      // Disable controls in locked and transition states to enforce the focused view.
+      // Enabled only in 'free' and 'exit' (for responsiveness).
+      enabled={cameraState === 'free' || cameraState === 'exit'}
       onStart={() => {
         // If the user starts interacting during an exit transition, 
         // immediately give them full control.

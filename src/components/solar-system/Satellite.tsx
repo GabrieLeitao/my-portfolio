@@ -69,6 +69,7 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId, index 
     <Select enabled={isParentSelected}>
       <mesh
         ref={satelliteRef}
+        name={satellite.id}
         geometry={geometry}
         onClick={(e) => e.stopPropagation()}
       >

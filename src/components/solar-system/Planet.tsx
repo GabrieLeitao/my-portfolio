@@ -125,7 +125,7 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} name={experience.id}>
       <Select enabled={isSelected}>
         <mesh
           ref={planetRef}

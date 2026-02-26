@@ -6,13 +6,15 @@ import { useStore } from '../../store';
 import * as THREE from 'three';
 
 const CameraController: React.FC = () => {
-  const { camera } = useThree();
+  const { camera, scene } = useThree();
   const controlsRef = useRef<any>(null);
+  const tempVec = useMemo(() => new THREE.Vector3(), []);
 
   // Subscribe to state individually
   const cameraState = useStore((state) => state.cameraState);
   const cameraTargetPosition = useStore((state) => state.cameraTargetPosition);
   const cameraLookAt = useStore((state) => state.cameraLookAt);
+  const selectedExperience = useStore((state) => state.selectedExperience);
   const setCameraState = useStore((state) => state.setCameraState);
 
   useEffect(() => {
@@ -23,21 +25,31 @@ const CameraController: React.FC = () => {
   useFrame((_, delta) => {
     if (!controlsRef.current) return;
 
+    // Determine the dynamic target to look at
+    let currentLookAt = cameraLookAt;
+    if (selectedExperience) {
+      const targetObj = scene.getObjectByName(selectedExperience.data.id);
+      if (targetObj) {
+        targetObj.getWorldPosition(tempVec);
+        currentLookAt = tempVec;
+      }
+    }
+
     if (cameraState === 'transition' || cameraState === 'exit') {
       // Transition back to overview is faster for better responsiveness
       const lerpSpeed = cameraState === 'exit' ? 6.0 : 3.0;
       camera.position.lerp(cameraTargetPosition, lerpSpeed * delta);
       
-      controlsRef.current.target.lerp(cameraLookAt, lerpSpeed * delta);
+      controlsRef.current.target.lerp(currentLookAt, lerpSpeed * delta);
       controlsRef.current.update();
 
       const dist = camera.position.distanceTo(cameraTargetPosition);
-      const targetDist = controlsRef.current.target.distanceTo(cameraLookAt);
+      const targetDist = controlsRef.current.target.distanceTo(currentLookAt);
       
       // Separate thresholds: 
-      // - Transition (entering): needs to be very tight (0.01) for a smooth arrival.
+      // - Transition (entering): needs to be tighter (0.1) for a smooth arrival.
       // - Exit (leaving): can be loose (2.0) for a fast handoff.
-      const threshold = cameraState === 'transition' ? 0.01 : 2.0;
+      const threshold = cameraState === 'transition' ? 0.1 : 2.0;
       
       if (dist < threshold && targetDist < threshold) {
         if (cameraState === 'transition') {
@@ -47,9 +59,10 @@ const CameraController: React.FC = () => {
         }
       }
     } else if (cameraState === 'locked') {
-      // In locked mode, use a very fast lerp instead of copy to avoid any jitter or jumps
-      controlsRef.current.target.lerp(cameraLookAt, 10 * delta);
+      // In locked mode, keep the target perfectly centered on the moving planet
+      controlsRef.current.target.copy(currentLookAt);
       controlsRef.current.update();
+      // WE DO NOT LERP POSITION HERE - this allows the user to rotate/zoom freely
     }
   });
 

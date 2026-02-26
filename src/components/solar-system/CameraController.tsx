@@ -31,11 +31,15 @@ const CameraController: React.FC = () => {
       controlsRef.current.target.lerp(cameraLookAt, lerpSpeed * delta);
       controlsRef.current.update();
 
-      // Increased threshold to 2.0 for faster handoff to user controls
       const dist = camera.position.distanceTo(cameraTargetPosition);
       const targetDist = controlsRef.current.target.distanceTo(cameraLookAt);
       
-      if (dist < 2.0 && targetDist < 2.0) {
+      // Separate thresholds: 
+      // - Transition (entering): needs to be very tight (0.01) for a smooth arrival.
+      // - Exit (leaving): can be loose (2.0) for a fast handoff.
+      const threshold = cameraState === 'transition' ? 0.01 : 2.0;
+      
+      if (dist < threshold && targetDist < threshold) {
         if (cameraState === 'transition') {
           setCameraState('locked');
         } else if (cameraState === 'exit') {
@@ -43,9 +47,8 @@ const CameraController: React.FC = () => {
         }
       }
     } else if (cameraState === 'locked') {
-      // In locked mode, we still want to keep the target updated if the planet moves
-      // (though planets freeze when selected, so this is just for safety)
-      controlsRef.current.target.copy(cameraLookAt);
+      // In locked mode, use a very fast lerp instead of copy to avoid any jitter or jumps
+      controlsRef.current.target.lerp(cameraLookAt, 10 * delta);
       controlsRef.current.update();
     }
   });

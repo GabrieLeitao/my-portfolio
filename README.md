@@ -10,12 +10,19 @@ This project is a unique and engaging personal portfolio website, designed to sh
     *   **Hover**: Global slowdown when inspecting any planet.
     *   **Selected**: Motion freezes on the selected planet for optimal readability.
 *   **Advanced Camera System**: Smoothly transitions between a free-orbit overview, focused inspection, and return-to-home states using cubic easing.
-*   **Realistic Orbital Physics**: Orbital speeds follow Kepler's Third Law ($v \propto 1/\sqrt{r}$), making closer planets orbit faster than outer ones.
+*   **Realistic Orbital Physics**: 
+    *   **Keplerian Orbits**: Elliptical paths with variable speed (faster at periapsis, slower at apoapsis) based on 1st-order True Anomaly approximations.
+    *   **Kepler's Third Law**: Orbital periods $T \propto a^{1.5}$ ($v \propto 1/\sqrt{r}$) for consistent celestial mechanics.
+    *   **Axial Tilt (Obliquity)**: Planets, rings, and satellites align to each planet's unique equatorial plane.
+    *   **Inclination**: 3D orbital planes for diverse celestial arrangements.
 *   **Polished UI/UX**:
     *   **HTML Tooltips**: Camera-facing, lightweight HTML overlays for instant project summaries.
     *   **Experience Detail**: A sliding panel for deep dives into specific roles.
     *   **Timeline Grid**: Subtle background rings encoding experience recency by distance.
-*   **Advanced Visuals**: Selective bloom (glow) for focused items and smooth Depth-of-Field transitions.
+*   **Advanced Visuals**: 
+    *   **Atmospheric Halos**: Optimized glowing atmospheres using stable additive blending and back-side rendering for a realistic gaseous limb effect.
+    *   **Planetary Rings**: Configurable, semi-transparent rings that respect axial tilt and lighting.
+    *   **Selective Bloom & DOF**: Optimized bloom for stars and selected bodies, with smooth Depth-of-Field transitions.
 *   **Modern Tech Stack**: Built with React, Vite, TypeScript, Three.js, @react-three/fiber, and Zustand.
 
 ## Project Structure Highlights

@@ -20,7 +20,14 @@ export interface Experience {
   distanceFromStar: number; // Distance from the central star
   orbitalSpeed: number; // Orbital speed around the star
   inclination?: number; // Optional orbital inclination in degrees
+  axialTilt?: number; // Optional axial tilt in degrees (obliquity)
+  eccentricity?: number; // Optional orbital eccentricity (0 = circle, < 1 = ellipse)
   satellites?: Satellite[];
+  rings?: {
+    innerRadius: number;
+    outerRadius: number;
+    color?: string;
+  };
 }
 
 export interface SelectedExperience {

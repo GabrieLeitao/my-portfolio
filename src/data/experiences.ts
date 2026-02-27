@@ -46,7 +46,9 @@ export const experiences: Experience[] = [
     distanceFromStar: 10,
     orbitalSpeed: 0.00115, 
     inclination: 3,
-    satellites: [],
+    axialTilt: 23.4,
+    eccentricity: 0.048, // Jupiter-like
+    satellites: []
   },
   {
     name: 'CDH Department Member @ LISAT Team',
@@ -59,7 +61,14 @@ export const experiences: Experience[] = [
     distanceFromStar: 12,
     orbitalSpeed: 0.001, 
     inclination: 3,
+    axialTilt: 15,
+    eccentricity: 0.02,
     satellites: [],
+    rings: {
+      innerRadius: 2,
+      outerRadius: 2.8,
+      color: '#ff8c00'
+    }
   },
   {
     name: 'BSc Aerospace Engineering',
@@ -68,11 +77,18 @@ export const experiences: Experience[] = [
     startDate: '11/09/2023',
     endDate: 'Present',
     technologies: ['SolidWorks', 'Xilinx Vivado', 'MATLAB', 'Simulink'],
-    radius: 1.3,
+    radius: 1.8,
     distanceFromStar: 14,
     orbitalSpeed: 0.00085,
     inclination: 1,
+    axialTilt: 26.7,
+    eccentricity: 0.056, // Saturn-like
     satellites: [],
+    rings: {
+      innerRadius: 2.4,
+      outerRadius: 3.4,
+      color: '#6495ed'
+    }
   },
   {
     name: 'Monitor @ Primeiros Bits Summer School',
@@ -94,7 +110,7 @@ export const experiences: Experience[] = [
     startDate: '11/07/2025',
     endDate: '11/07/2025',
     technologies: [],
-    radius: 0.7,
+    radius: 0.4,
     distanceFromStar: 8,
     orbitalSpeed: 0.0015,
     inclination: 40,
@@ -108,10 +124,11 @@ export const experiences: Experience[] = [
     startDate: '10/02/2026',
     endDate: '14/02/2026',
     technologies: ['asm', 'C'],
-    radius: 0.8,
+    radius: 0.6,
     distanceFromStar: 8,
     orbitalSpeed: 0.0015,
     inclination: 5,
+    eccentricity: 0.11,
     satellites: [],
   },
   {
@@ -123,10 +140,11 @@ export const experiences: Experience[] = [
     startDate: '20/10/2025',
     endDate: '25/10/2025',
     technologies: ['C++'],
-    radius: 0.6,
+    radius: 0.7,
     distanceFromStar: 18,
     orbitalSpeed: 0.0007,
     inclination: -4,
+    eccentricity: 0.093, // Mars-like
     satellites: [],
   },
   {
@@ -136,10 +154,12 @@ export const experiences: Experience[] = [
     startDate: '01/01/2022',
     endDate: '01/05/2023',
     technologies: ['Python', 'Pandas'],
-    radius: 0.5,
+    radius: 0.7,
     distanceFromStar: 22,
     orbitalSpeed: 0.0006,
     inclination: 11,
+    axialTilt: 25,
+    eccentricity: 0.046, // Uranus-like
     satellites: [
       {
         name: 'Integral Calculus',
@@ -182,7 +202,7 @@ export const experiences: Experience[] = [
     startDate: '21/02/2022',
     endDate: '01/08/2023',
     technologies: ['C', 'Python', 'HTML', 'CSS'],
-    radius: 0.5,
+    radius: 0.6,
     distanceFromStar: 26,
     orbitalSpeed: 0.00055,
     inclination: 9,

@@ -13,39 +13,40 @@ import { useStore } from '../../store';
 const SceneContent: React.FC = () => {
   const dofRef = useRef<any>(null);
   const bloomRef = useRef<any>(null);
-  const lightsInitializedRef = useRef(false);
+  const ambientLightRef = useRef<THREE.AmbientLight>(null);
+  const starLightRef = useRef<THREE.PointLight>(null);
   const { scene } = useThree();
 
   const dummyLight = React.useMemo(() => new THREE.PointLight(), []);
 
-  useFrame((_, delta) => {
-    // 1. Initialize lights once in a frame
-    if (bloomRef.current && !lightsInitializedRef.current) {
+  // Initialize bloom lights once on mount or when lights are ready
+  React.useEffect(() => {
+    if (bloomRef.current) {
       const lights: THREE.Light[] = [];
-      scene.traverse((obj) => {
-        if ((obj as any).isLight) lights.push(obj as THREE.Light);
-      });
-      if (lights.length > 0) {
-        bloomRef.current.lights = lights;
-        lightsInitializedRef.current = true;
-      }
+      if (ambientLightRef.current) lights.push(ambientLightRef.current);
+      // We can also find lights by traversing once if they are dynamic, 
+      // but here we have static references
+      bloomRef.current.lights = lights;
     }
+  }, []);
 
-    // 2. Update DOF effects - Access store directly to avoid triggering parent re-render
+  useFrame((_, delta) => {
+    // Update DOF effects - Access store directly to avoid triggering parent re-render
     const isSelected = useStore.getState().selectedExperience !== null;
     if (dofRef.current) {
       const targetBokeh = isSelected ? 2 : 0;
+      const smoothing = 1 - Math.exp(-2 * delta);
       dofRef.current.bokehScale = THREE.MathUtils.lerp(
         dofRef.current.bokehScale,
         targetBokeh,
-        delta * 2
+        smoothing
       );
     }
   });
 
   return (
     <Selection>
-      <ambientLight intensity={0.7} />
+      <ambientLight ref={ambientLightRef} intensity={0.7} />
       <Stars radius={200} depth={50} count={5000} factor={4} saturation={0} fade />
 
       <TimelineGrid experiences={experiences} />

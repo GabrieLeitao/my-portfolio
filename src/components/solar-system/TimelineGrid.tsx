@@ -47,7 +47,7 @@ const TimelineGrid: React.FC<TimelineGridProps> = ({ experiences }) => {
               position={[distance, 0, 0]}
               distanceFactor={20}
               center
-              zIndexRange={[10, 0]}
+              zIndexRange={[1, 0]}
             >
               <div style={{
                 color: 'rgba(255, 255, 255, 0.6)',

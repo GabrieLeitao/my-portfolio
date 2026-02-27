@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { Select } from '@react-three/postprocessing';
 import { Satellite as SatelliteType } from '../../types';
 import { useStore } from '../../store';
+import { PHYSICS_CONSTANTS } from '../../utils/physics';
 
 interface SatelliteProps {
   satellite: SatelliteType;
@@ -36,7 +37,7 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetName, inde
         speedMultiplier = 0.3;
       }
 
-      const currentSpeed = satellite.speed * 30 * speedMultiplier;
+      const currentSpeed = satellite.speed * PHYSICS_CONSTANTS.SATELLITE_SPEED_MULTIPLIER * speedMultiplier;
       let targetDistance = satellite.distanceFromPlanet;
 
       if (motionState === 'selected' && isParentSelected) {
@@ -58,7 +59,8 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetName, inde
         satelliteRef.current.position.copy(targetPosition);
         isInitialized.current = true;
       } else {
-        satelliteRef.current.position.lerp(targetPosition, delta * 5);
+        const smoothing = 1 - Math.exp(-PHYSICS_CONSTANTS.LERP_SMOOTHING_BASE * delta);
+        satelliteRef.current.position.lerp(targetPosition, smoothing);
       }
       
       satelliteRef.current.rotation.y += delta;

@@ -10,6 +10,7 @@ import Satellite from './Satellite';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
 import { useDynamicOrbit } from '../../hooks/useDynamicOrbit';
 import { renderDescription } from '../../utils/textUtils';
+import { calculateOrbitalPosition, PHYSICS_CONSTANTS } from '../../utils/physics';
 
 interface PlanetProps {
   experience: Experience;
@@ -27,7 +28,6 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const { playHover, playClick } = useSoundEffects();
   const { getOrbitData } = useDynamicOrbit();
 
-  // Stable state selection
   const motionState = useStore((state) => state.motionState);
   const selectedExperience = useStore((state) => state.selectedExperience);
   const aboutOpen = useStore((state) => state.aboutOpen);
@@ -36,144 +36,125 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isSelected = selectedExperience?.data.name === experience.name;
 
-  const geometry = useMemo(() => new THREE.SphereGeometry(experience.radius, 32, 32), [experience.radius]);
-
   const color = useMemo(() => {
     switch (experience.type) {
-      case 'job':
-        return new THREE.Color('#ff8c00');
-      case 'education':
-        return new THREE.Color('#6495ed');
-      case 'main-education':
-        return new THREE.Color('#6495ed');
-      case 'project':
-        return new THREE.Color('#98fb98');
-      case 'general':
-        return new THREE.Color('#ff69b4');
-      default:
-        return new THREE.Color('white');
+      case 'job': return new THREE.Color('#ff8c00');
+      case 'education': 
+      case 'main-education': return new THREE.Color('#6495ed');
+      case 'project': return new THREE.Color('#98fb98');
+      case 'general': return new THREE.Color('#ff69b4');
+      default: return new THREE.Color('white');
     }
   }, [experience.type]);
 
-  const handleClick = useCallback((event: any) => {
-    event.stopPropagation();
-    if (selectedExperience) return;
-
-    if (planetRef.current) {
-      playClick();
-      const planetPosition = new THREE.Vector3();
-      planetRef.current.getWorldPosition(planetPosition);
-      
-      const cameraOffset = new THREE.Vector3(0, experience.radius * 2, experience.radius * 5);
-      const targetPosition = planetPosition.clone().add(cameraOffset);
-      
-      useStore.getState().selectExperience({ type: 'planet', data: experience }, targetPosition, planetPosition);
-    }
+  const handleClick = useCallback((e: any) => {
+    e.stopPropagation();
+    if (selectedExperience || !planetRef.current) return;
+    playClick();
+    const pos = new THREE.Vector3();
+    planetRef.current.getWorldPosition(pos);
+    const offset = new THREE.Vector3(0, experience.radius * 2, experience.radius * 5);
+    useStore.getState().selectExperience({ type: 'planet', data: experience }, pos.clone().add(offset), pos);
   }, [experience, selectedExperience, playClick]);
 
-  const handlePointerOver = useCallback((event: any) => {
-    event.stopPropagation();
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation();
     if (selectedExperience) return;
-    
     playHover();
     setIsHovered(true);
     useStore.getState().setHoveredExperience({ type: 'planet', data: experience });
-  }, [experience, selectedExperience, playHover]);
+  };
 
-  const handlePointerOut = useCallback((event: any) => {
-    event.stopPropagation();
+  const handlePointerOut = () => {
     setIsHovered(false);
     useStore.getState().setHoveredExperience(null);
-  }, []);
-  
-  const targetScaleVector = useMemo(() => new THREE.Vector3(), []);
+  };
 
   useFrame((_, delta) => {
-    // 1. Calculate target orbit parameters
     const orbitData = dynamicDistancing ? getOrbitData(experience.name) : null;
-    const targetDistance = orbitData ? orbitData.distance : experience.distanceFromStar;
-    const targetOrbitalSpeed = orbitData ? orbitData.speed : experience.orbitalSpeed;
+    const dist = orbitData ? orbitData.distance : experience.distanceFromStar;
+    const speed = orbitData ? orbitData.speed : experience.orbitalSpeed;
 
-    // 2. Determine motion multiplier
-    let speedMultiplier = 1.0;
-    if (motionState === 'selected') speedMultiplier = 0.05;
-    else if (motionState === 'hover') speedMultiplier = 0.3;
+    let multiplier = 1.0;
+    if (motionState === 'selected') multiplier = 0.05;
+    else if (motionState === 'hover') multiplier = 0.3;
 
-    const currentSpeed = targetOrbitalSpeed * 60 * speedMultiplier;
-
-    // 3. Update position
     if (groupRef.current) {
-      angleRef.current += currentSpeed * delta;
-      
-      const x = Math.sin(angleRef.current) * targetDistance;
-      const z = Math.cos(angleRef.current) * targetDistance;
-      const inclinationInRadians = (experience.inclination || 0) * (Math.PI / 180);
-
-      groupRef.current.position.set(
-        x,
-        Math.sin(inclinationInRadians) * z,
-        Math.cos(inclinationInRadians) * z
-      );
+      angleRef.current += speed * PHYSICS_CONSTANTS.ORBIT_SPEED_MULTIPLIER * multiplier * delta;
+      const { distance, trueAnomaly } = calculateOrbitalPosition(angleRef.current, experience.eccentricity, dist);
+      const inc = (experience.inclination || 0) * (Math.PI / 180);
+      groupRef.current.position.set(Math.sin(trueAnomaly) * distance, Math.sin(inc) * Math.cos(trueAnomaly) * distance, Math.cos(trueAnomaly) * distance);
     }
 
-    // 4. Update mesh effects
     if (planetRef.current) {
       planetRef.current.rotation.y += 0.5 * delta;
-      const targetScale = isHovered ? 1.1 : 1;
-      targetScaleVector.set(targetScale, targetScale, targetScale);
-      planetRef.current.scale.lerp(targetScaleVector, delta * 8);
+      const s = isHovered ? 1.1 : 1;
+      planetRef.current.scale.lerp(new THREE.Vector3(s, s, s), 1 - Math.exp(-8 * delta));
     }
   });
 
+  const tilt = (experience.axialTilt || 0) * (Math.PI / 180);
+
   return (
-    <group ref={groupRef} name={experience.name}>
-      <Select enabled={isSelected}>
-        <mesh
-          ref={planetRef}
-          geometry={geometry}
-          onClick={handleClick}
-          onPointerOver={handlePointerOver}
-          onPointerOut={handlePointerOut}
-        >
-          <meshStandardMaterial
-            color={color}
-            emissive={color}
-            emissiveIntensity={isHovered ? 0.6 : (isSelected ? 1.2 : 0.2)}
-          />
-          {isHovered && !isSelected && !aboutOpen && (
-            <Html pointerEvents="none" zIndexRange={[100, 0]}>
-              <div className="tooltip" style={{ 
-                background: 'rgba(0,0,0,0.9)', 
-                color: 'white', 
-                padding: '16px', 
-                borderRadius: '10px',
-                border: `2px solid ${color.getStyle()}`,
-                width: 'max-content',
-                maxWidth: '350px',
-                transform: 'translate(15px, 15px)',
-                boxShadow: '0 8px 25px rgba(0,0,0,0.7)',
-                fontFamily: 'sans-serif'
-              }}>
-                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1em' }}>{experience.name}</h3>
-                <p style={{ margin: '0 0 8px 0', opacity: 0.8, fontSize: '0.9em' }}>
-                  {experience.startDate} - {experience.endDate}
-                </p>
-                <div style={{ margin: 0, fontSize: '0.85em', lineHeight: '1.4' }}>
-                  {renderDescription(experience.description)}
-                </div>
-              </div>
-            </Html>
-          )}
-        </mesh>
-      </Select>
-      {experience.satellites && experience.satellites.map((sat, index) => (
-        <Satellite
-          key={sat.name}
-          satellite={sat}
-          parentPlanetName={experience.name}
-          index={index}
-        />
-      ))}
+    <group ref={groupRef}>
+      <group rotation={[tilt, 0, 0]}>
+        <Select enabled={isSelected}>
+          {/* Main Planet */}
+          <mesh
+            ref={planetRef}
+            onClick={handleClick}
+            onPointerOver={handlePointerOver}
+            onPointerOut={handlePointerOut}
+          >
+            <sphereGeometry args={[experience.radius, 32, 32]} />
+            <meshStandardMaterial 
+              color={color} 
+              emissive={color} 
+              emissiveIntensity={isSelected ? 1.2 : (isHovered ? 0.6 : 0.2)} 
+              roughness={0.8}
+            />
+            
+            {/* Simple Glow Atmosphere */}
+            <mesh scale={[1.05, 1.05, 1.05]} raycast={() => null}>
+              <sphereGeometry args={[experience.radius, 32, 32]} />
+              <meshBasicMaterial color={color} transparent opacity={isSelected ? 0.3 : 0.15} side={THREE.BackSide} />
+            </mesh>
+
+            {/* Rings */}
+            {experience.rings && (
+              <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[experience.rings.innerRadius, experience.rings.outerRadius, 64]} />
+                <meshStandardMaterial 
+                  color={experience.rings.color || color} 
+                  transparent 
+                  opacity={0.4} 
+                  side={THREE.DoubleSide} 
+                  emissive={experience.rings.color || color}
+                  emissiveIntensity={isSelected ? 0.5 : 0.2}
+                />
+              </mesh>
+            )}
+          </mesh>
+        </Select>
+
+        {isHovered && !isSelected && !aboutOpen && (
+          <Html pointerEvents="none" zIndexRange={[100, 0]} position={[0, experience.radius * 1.5, 0]}>
+            <div style={{ 
+              background: 'rgba(0,0,0,0.9)', color: 'white', padding: '12px', borderRadius: '8px',
+              border: `2px solid ${color.getStyle()}`, width: 'max-content', maxWidth: '300px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.5)', fontFamily: 'sans-serif'
+            }}>
+              <h4 style={{ margin: '0 0 4px 0' }}>{experience.name}</h4>
+              <div style={{ fontSize: '0.8em', opacity: 0.8 }}>{experience.startDate} - {experience.endDate}</div>
+              <div style={{ fontSize: '0.85em', marginTop: '8px', lineHeight: '1.4' }}>{renderDescription(experience.description)}</div>
+            </div>
+          </Html>
+        )}
+
+        {experience.satellites?.map((sat, i) => (
+          <Satellite key={sat.name} satellite={sat} parentPlanetName={experience.name} index={i} />
+        ))}
+      </group>
     </group>
   );
 };

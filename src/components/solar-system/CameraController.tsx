@@ -25,10 +25,12 @@ const CameraController: React.FC = () => {
   // Save camera state before starting a transition from 'free' mode
   useEffect(() => {
     if (cameraState === 'transition' && prevCameraStateRef.current === 'free' && controlsRef.current) {
-      saveCameraState(camera.position, controlsRef.current.target);
+      // Use useStore.getState() to avoid extra re-renders from the function reference itself
+      const state = useStore.getState();
+      state.saveCameraState(camera.position, controlsRef.current.target);
     }
     prevCameraStateRef.current = cameraState;
-  }, [cameraState, camera.position, saveCameraState]);
+  }, [cameraState]);
 
   useEffect(() => {
     // Set initial camera position once

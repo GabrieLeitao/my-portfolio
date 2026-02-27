@@ -2,13 +2,14 @@
 import React from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Mesh } from 'three';
+import { Select } from '@react-three/postprocessing';
 
 interface StarProps {
   size?: number;
   color?: string;
 }
 
-const Star: React.FC<StarProps> = ({ size = 1, color = 'gold' }) => {
+const Star: React.FC<StarProps> = ({ size = 2, color = '#ffd700' }) => {
   const starRef = React.useRef<Mesh>(null);
 
   useFrame(() => {
@@ -19,13 +20,16 @@ const Star: React.FC<StarProps> = ({ size = 1, color = 'gold' }) => {
 
   return (
     <>
-      <mesh ref={starRef}>
-        <sphereGeometry args={[size, 32, 32]} />
-        <meshStandardMaterial emissive={color} emissiveIntensity={10} color={color} />
-      </mesh>
-      {/* Primary light source from the star - significantly boosted */}
-      <pointLight intensity={50} distance={200} decay={1} color="white" />
-      <pointLight intensity={20} distance={50} decay={0.5} color={color} />
+      <Select enabled>
+        <mesh ref={starRef}>
+          <sphereGeometry args={[size, 32, 32]} />
+          {/* Reduced emissive intensity to prevent excessive bloom */}
+          <meshStandardMaterial emissive={color} emissiveIntensity={3} color={color} />
+        </mesh>
+      </Select>
+      {/* Keeping point light relatively strong to illuminate the system */}
+      <pointLight intensity={60} distance={220} decay={1.2} color="white" />
+      <pointLight intensity={25} distance={50} decay={1} color={color} />
     </>
   );
 };

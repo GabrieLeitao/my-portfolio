@@ -51,7 +51,7 @@ export const useStore = create<AppState>((set) => ({
   aboutOpen: false,
   motionState: 'idle',
   cameraState: 'free',
-  cameraTargetPosition: new THREE.Vector3(0, 20, 50), // Initial overview position
+  cameraTargetPosition: new THREE.Vector3(0, 20, 50), // Adjusted for better overview
   cameraLookAt: new THREE.Vector3(0, 0, 0), // Initial look-at target
   cameraOffset: null,
   savedCameraPosition: null,

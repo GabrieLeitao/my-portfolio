@@ -12,84 +12,85 @@ const CameraController: React.FC = () => {
   const tempVec2 = useMemo(() => new THREE.Vector3(), []);
   const sunPos = useMemo(() => new THREE.Vector3(0, 0, 0), []);
 
-  // Subscribe to state individually
+  // Use getState() in useFrame to avoid ANY re-renders from state changes
   const cameraState = useStore((state) => state.cameraState);
-  const cameraTargetPosition = useStore((state) => state.cameraTargetPosition);
-  const cameraLookAt = useStore((state) => state.cameraLookAt);
-  const cameraOffset = useStore((state) => state.cameraOffset);
-  const selectedExperience = useStore((state) => state.selectedExperience);
-  const setCameraState = useStore((state) => state.setCameraState);
-  const saveCameraState = useStore((state) => state.saveCameraState);
   const prevCameraStateRef = useRef(cameraState);
 
-  const lastSavedPosRef = useRef(new THREE.Vector3());
+  // Initialize initial camera position ONCE on mount
+  useEffect(() => {
+    const initialPos = useStore.getState().cameraTargetPosition;
+    camera.position.copy(initialPos);
+    if (controlsRef.current) {
+      controlsRef.current.target.set(0, 0, 0);
+    }
+  }, [camera]);
 
-  // Save camera state only when a transition starts from 'free' mode
+  // Use a very stable transition save logic
   useEffect(() => {
     if (cameraState === 'transition' && prevCameraStateRef.current === 'free') {
       const state = useStore.getState();
-      // Ensure we have controls before saving
       if (controlsRef.current) {
         state.saveCameraState(camera.position, controlsRef.current.target);
       }
     }
     prevCameraStateRef.current = cameraState;
-  }, [cameraState, camera]);
+  }, [cameraState, camera.position]); // Stable dependency
 
   useFrame((_, delta) => {
     if (!controlsRef.current) return;
 
-    // Determine the dynamic target to look at and position to follow
-    let currentLookAt = cameraLookAt;
-    let currentCameraPos = cameraTargetPosition;
+    // Pull current state directly to avoid triggering React updates
+    const state = useStore.getState();
+    const currentCameraState = state.cameraState;
+    const currentSelectedExperience = state.selectedExperience;
+    const currentCameraOffset = state.cameraOffset;
+    const currentCameraLookAt = state.cameraLookAt;
+    const currentCameraTargetPosition = state.cameraTargetPosition;
 
-    if (selectedExperience) {
-      const targetObj = scene.getObjectByName(selectedExperience.data.name);
+    let targetLookAt = currentCameraLookAt;
+    let targetCameraPos = currentCameraTargetPosition;
+
+    if (currentSelectedExperience) {
+      const targetObj = scene.getObjectByName(currentSelectedExperience.data.name);
       if (targetObj) {
         targetObj.getWorldPosition(tempVec);
-        currentLookAt = tempVec;
+        targetLookAt = tempVec;
         
-        // If we have an offset, the camera position is relative to the moving planet
-        if (cameraOffset) {
-          tempVec2.copy(tempVec).add(cameraOffset);
-          currentCameraPos = tempVec2;
+        if (currentCameraOffset) {
+          tempVec2.copy(tempVec).add(currentCameraOffset);
+          targetCameraPos = tempVec2;
         }
       }
-    } else if (cameraState === 'free') {
-      currentLookAt = sunPos;
+    } else if (currentCameraState === 'free') {
+      targetLookAt = sunPos;
     }
 
-    if (cameraState === 'transition' || cameraState === 'exit') {
-      // Significantly faster speed for exit to return control quickly
-      const speed = cameraState === 'exit' ? 8.0 : 4.0;
+    if (currentCameraState === 'transition' || currentCameraState === 'exit') {
+      // Much faster exit transition
+      const speed = currentCameraState === 'exit' ? 8.0 : 4.0;
       const alpha = 1 - Math.exp(-speed * delta);
       
-      camera.position.lerp(currentCameraPos, alpha);
-      controlsRef.current.target.lerp(currentLookAt, alpha);
+      camera.position.lerp(targetCameraPos, alpha);
+      controlsRef.current.target.lerp(targetLookAt, alpha);
       controlsRef.current.update();
 
-      const dist = camera.position.distanceTo(currentCameraPos);
-      const targetDist = controlsRef.current.target.distanceTo(currentLookAt);
+      const dist = camera.position.distanceTo(targetCameraPos);
+      const targetDist = controlsRef.current.target.distanceTo(targetLookAt);
       
-      // Snappier threshold for exit
-      const threshold = cameraState === 'exit' ? 0.2 : 0.05;
+      const threshold = currentCameraState === 'exit' ? 0.2 : 0.05;
       
       if (dist < threshold && targetDist < threshold) {
-        // Use getState().setCameraState to avoid re-render cycles within useFrame
-        const state = useStore.getState();
-        if (cameraState === 'transition') {
+        if (currentCameraState === 'transition') {
           state.setCameraState('locked');
-        } else if (cameraState === 'exit') {
+        } else if (currentCameraState === 'exit') {
           state.setCameraState('free');
         }
       }
-    } else if (cameraState === 'locked') {
-      // In locked mode, follow the target precisely every frame
-      camera.position.copy(currentCameraPos);
-      controlsRef.current.target.copy(currentLookAt);
+    } else if (currentCameraState === 'locked') {
+      camera.position.copy(targetCameraPos);
+      controlsRef.current.target.copy(targetLookAt);
       controlsRef.current.update();
-    } else if (cameraState === 'free') {
-      // Ensure we stay centered on the sun even if controls attempt to drift
+    } else if (currentCameraState === 'free') {
       controlsRef.current.target.copy(sunPos);
       controlsRef.current.update();
     }
@@ -99,16 +100,15 @@ const CameraController: React.FC = () => {
     <OrbitControls
       ref={controlsRef}
       enabled={cameraState === 'free'}
-      enablePan={false} // Disable right-click panning
+      enablePan={false}
       enableDamping
       dampingFactor={0.05}
       rotateSpeed={0.5}
       zoomSpeed={0.8}
       minDistance={5}
-      maxDistance={100}
+      maxDistance={150}
     />
   );
 };
 
 export default CameraController;
-

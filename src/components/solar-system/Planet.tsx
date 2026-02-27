@@ -27,13 +27,11 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const { playHover, playClick } = useSoundEffects();
   const { getOrbitData } = useDynamicOrbit();
 
-  // Individual state selection for maximum stability
+  // Stable state selection
   const motionState = useStore((state) => state.motionState);
   const selectedExperience = useStore((state) => state.selectedExperience);
   const aboutOpen = useStore((state) => state.aboutOpen);
   const dynamicDistancing = useStore((state) => state.dynamicDistancing);
-  const selectExperience = useStore((state) => state.selectExperience);
-  const setHoveredExperience = useStore((state) => state.setHoveredExperience);
 
   const [isHovered, setIsHovered] = useState(false);
   const isSelected = selectedExperience?.data.name === experience.name;
@@ -49,7 +47,7 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       case 'project':
         return new THREE.Color('#98fb98');
       case 'general':
-        return new THREE.Color('#ff69b4'); // Hot pink or something distinct
+        return new THREE.Color('#ff69b4');
       default:
         return new THREE.Color('white');
     }
@@ -67,9 +65,9 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       const cameraOffset = new THREE.Vector3(0, experience.radius * 2, experience.radius * 5);
       const targetPosition = planetPosition.clone().add(cameraOffset);
       
-      selectExperience({ type: 'planet', data: experience }, targetPosition, planetPosition);
+      useStore.getState().selectExperience({ type: 'planet', data: experience }, targetPosition, planetPosition);
     }
-  }, [experience, selectedExperience, selectExperience, playClick]);
+  }, [experience, selectedExperience, playClick]);
 
   const handlePointerOver = useCallback((event: any) => {
     event.stopPropagation();
@@ -77,14 +75,14 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
     
     playHover();
     setIsHovered(true);
-    setHoveredExperience({ type: 'planet', data: experience });
-  }, [experience, selectedExperience, setHoveredExperience, playHover]);
+    useStore.getState().setHoveredExperience({ type: 'planet', data: experience });
+  }, [experience, selectedExperience, playHover]);
 
   const handlePointerOut = useCallback((event: any) => {
     event.stopPropagation();
     setIsHovered(false);
-    setHoveredExperience(null);
-  }, [setHoveredExperience]);
+    useStore.getState().setHoveredExperience(null);
+  }, []);
   
   const targetScaleVector = useMemo(() => new THREE.Vector3(), []);
 

@@ -11,28 +11,28 @@ import TimelineGrid from './TimelineGrid';
 import { useStore } from '../../store';
 
 const SceneContent: React.FC = () => {
-  const isSelected = useStore((state) => state.selectedExperience !== null);
   const dofRef = useRef<any>(null);
   const bloomRef = useRef<any>(null);
+  const lightsInitializedRef = useRef(false);
   const { scene } = useThree();
 
   const dummyLight = React.useMemo(() => new THREE.PointLight(), []);
 
-  // Initialize lights for SelectiveBloom after mount
-  React.useLayoutEffect(() => {
-    if (bloomRef.current) {
+  useFrame((_, delta) => {
+    // 1. Initialize lights once in a frame
+    if (bloomRef.current && !lightsInitializedRef.current) {
       const lights: THREE.Light[] = [];
       scene.traverse((obj) => {
         if ((obj as any).isLight) lights.push(obj as THREE.Light);
       });
       if (lights.length > 0) {
         bloomRef.current.lights = lights;
+        lightsInitializedRef.current = true;
       }
     }
-  }, [scene]);
 
-  useFrame((_, delta) => {
-    // 2. Update DOF effects
+    // 2. Update DOF effects - Access store directly to avoid triggering parent re-render
+    const isSelected = useStore.getState().selectedExperience !== null;
     if (dofRef.current) {
       const targetBokeh = isSelected ? 2 : 0;
       dofRef.current.bokehScale = THREE.MathUtils.lerp(
@@ -45,11 +45,12 @@ const SceneContent: React.FC = () => {
 
   return (
     <Selection>
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={0.7} />
       <Stars radius={200} depth={50} count={5000} factor={4} saturation={0} fade />
 
       <TimelineGrid experiences={experiences} />
 
+      {/* The Sun */}
       <Star size={2} color="#ffd700" />
 
       {experiences.map((exp) => (
@@ -60,14 +61,15 @@ const SceneContent: React.FC = () => {
       ))}
       
       <EffectComposer>
+        {/* Adjusted intensity to 1.2 to reduce blooming effect on sun */}
         <SelectiveBloom
           ref={bloomRef}
-          lights={[dummyLight]} // Start with dummy
-          selectionLayer={1} 
+          lights={[dummyLight]} 
+          selectionLayer={10} 
           luminanceThreshold={0.01}
           luminanceSmoothing={0.9}
           height={300}
-          intensity={1.5}
+          intensity={1.2}
         />
         <DepthOfField
           ref={dofRef}
@@ -92,6 +94,3 @@ const SolarSystem: React.FC = () => {
 };
 
 export default SolarSystem;
-
-
-

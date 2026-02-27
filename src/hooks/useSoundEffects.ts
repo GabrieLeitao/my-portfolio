@@ -6,13 +6,15 @@ export const useSoundEffects = () => {
   const isMuted = useStore((state) => state.isMuted);
 
   const hoverSound = useMemo(() => {
-    const audio = new Audio('https://raw.githubusercontent.com/the-hyphen/audio-assets/main/hover.mp3');
+    // Using a more standard UI sound URL
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
     audio.volume = 0.15;
     return audio;
   }, []);
 
   const clickSound = useMemo(() => {
-    const audio = new Audio('https://raw.githubusercontent.com/the-hyphen/audio-assets/main/click.mp3');
+    // Using a more standard UI click sound URL
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
     audio.volume = 0.4;
     return audio;
   }, []);

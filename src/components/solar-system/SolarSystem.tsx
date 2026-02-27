@@ -14,6 +14,14 @@ const SceneContent: React.FC = () => {
   const isSelected = useStore((state) => state.selectedExperience !== null);
   const dofRef = useRef<any>(null);
   const bloomRef = useRef<any>(null);
+  const [ambientLight, setAmbientLight] = React.useState<THREE.AmbientLight | null>(null);
+  
+  const ambientLightRef = React.useCallback((node: THREE.AmbientLight | null) => {
+    if (node !== null) {
+      setAmbientLight(node);
+    }
+  }, []);
+
   const { scene } = useThree();
 
   useFrame((_, delta) => {
@@ -39,7 +47,7 @@ const SceneContent: React.FC = () => {
 
   return (
     <Selection>
-      <ambientLight intensity={0.6} />
+      <ambientLight ref={ambientLightRef} intensity={0.6} />
       <Stars radius={200} depth={50} count={5000} factor={4} saturation={0} fade />
 
       <TimelineGrid experiences={experiences} />
@@ -56,7 +64,7 @@ const SceneContent: React.FC = () => {
       <EffectComposer>
         <SelectiveBloom
           ref={bloomRef}
-          lights={[]} // Pass empty array to suppress initial warning
+          lights={ambientLight ? [ambientLight] : []}
           selectionLayer={10}
           luminanceThreshold={0.01}
           luminanceSmoothing={0.9}

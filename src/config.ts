@@ -11,4 +11,7 @@ export const CONFIG = {
   
   // Default mute state for background music
   initialMuted: false,
+
+  // Base path for assets (matches vite.config.ts base)
+  basePath: process.env.NODE_ENV === 'production' ? '/my-portfolio/' : '/',
 };

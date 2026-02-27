@@ -12,8 +12,12 @@ const CameraController: React.FC = () => {
   const tempVec2 = useMemo(() => new THREE.Vector3(), []);
   const sunPos = useMemo(() => new THREE.Vector3(0, 0, 0), []);
 
-  // Use getState() in useFrame to avoid ANY re-renders from state changes
   const cameraState = useStore((state) => state.cameraState);
+  const selectedExperience = useStore((state) => state.selectedExperience);
+  const cameraOffset = useStore((state) => state.cameraOffset);
+  const cameraLookAt = useStore((state) => state.cameraLookAt);
+  const cameraTargetPosition = useStore((state) => state.cameraTargetPosition);
+  
   const prevCameraStateRef = useRef(cameraState);
 
   // Initialize initial camera position ONCE on mount
@@ -22,52 +26,43 @@ const CameraController: React.FC = () => {
     camera.position.copy(initialPos);
     if (controlsRef.current) {
       controlsRef.current.target.set(0, 0, 0);
+      controlsRef.current.update();
     }
   }, [camera]);
 
-  // Use a very stable transition save logic
+  // Save camera state only when a transition starts
   useEffect(() => {
     if (cameraState === 'transition' && prevCameraStateRef.current === 'free') {
-      const state = useStore.getState();
       if (controlsRef.current) {
-        state.saveCameraState(camera.position, controlsRef.current.target);
+        useStore.getState().saveCameraState(camera.position, controlsRef.current.target);
       }
     }
     prevCameraStateRef.current = cameraState;
-  }, [cameraState, camera.position]); // Stable dependency
+  }, [cameraState, camera.position]);
 
   useFrame((_, delta) => {
     if (!controlsRef.current) return;
 
-    // Pull current state directly to avoid triggering React updates
-    const state = useStore.getState();
-    const currentCameraState = state.cameraState;
-    const currentSelectedExperience = state.selectedExperience;
-    const currentCameraOffset = state.cameraOffset;
-    const currentCameraLookAt = state.cameraLookAt;
-    const currentCameraTargetPosition = state.cameraTargetPosition;
+    let targetLookAt = cameraLookAt;
+    let targetCameraPos = cameraTargetPosition;
 
-    let targetLookAt = currentCameraLookAt;
-    let targetCameraPos = currentCameraTargetPosition;
-
-    if (currentSelectedExperience) {
-      const targetObj = scene.getObjectByName(currentSelectedExperience.data.name);
+    if (selectedExperience) {
+      const targetObj = scene.getObjectByName(selectedExperience.data.name);
       if (targetObj) {
         targetObj.getWorldPosition(tempVec);
         targetLookAt = tempVec;
-        
-        if (currentCameraOffset) {
-          tempVec2.copy(tempVec).add(currentCameraOffset);
+        if (cameraOffset) {
+          tempVec2.copy(tempVec).add(cameraOffset);
           targetCameraPos = tempVec2;
         }
       }
-    } else if (currentCameraState === 'free') {
+    } else if (cameraState === 'free') {
       targetLookAt = sunPos;
     }
 
-    if (currentCameraState === 'transition' || currentCameraState === 'exit') {
-      // Much faster exit transition
-      const speed = currentCameraState === 'exit' ? 8.0 : 4.0;
+    if (cameraState === 'transition' || cameraState === 'exit') {
+      // Return to the original speed that was smooth
+      const speed = cameraState === 'exit' ? 4.0 : 3.0;
       const alpha = 1 - Math.exp(-speed * delta);
       
       camera.position.lerp(targetCameraPos, alpha);
@@ -77,20 +72,25 @@ const CameraController: React.FC = () => {
       const dist = camera.position.distanceTo(targetCameraPos);
       const targetDist = controlsRef.current.target.distanceTo(targetLookAt);
       
-      const threshold = currentCameraState === 'exit' ? 0.2 : 0.05;
-      
-      if (dist < threshold && targetDist < threshold) {
-        if (currentCameraState === 'transition') {
+      if (dist < 0.01 && targetDist < 0.01) {
+        camera.position.copy(targetCameraPos);
+        controlsRef.current.target.copy(targetLookAt);
+        controlsRef.current.update();
+        
+        const state = useStore.getState();
+        if (cameraState === 'transition') {
           state.setCameraState('locked');
-        } else if (currentCameraState === 'exit') {
+        } else {
           state.setCameraState('free');
         }
       }
-    } else if (currentCameraState === 'locked') {
+    } else if (cameraState === 'locked') {
       camera.position.copy(targetCameraPos);
       controlsRef.current.target.copy(targetLookAt);
       controlsRef.current.update();
-    } else if (currentCameraState === 'free') {
+    } else if (cameraState === 'free') {
+      // In free mode, we only ensure the target stays centered on the sun
+      // but we DON'T force camera position so OrbitControls can work
       controlsRef.current.target.copy(sunPos);
       controlsRef.current.update();
     }

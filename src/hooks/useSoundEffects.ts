@@ -6,14 +6,14 @@ export const useSoundEffects = () => {
   const isMuted = useStore((state) => state.isMuted);
 
   const hoverSound = useMemo(() => {
-    const audio = new Audio('/sounds/hover.mp3');
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/hover.mp3`);
     audio.volume = 0.15;
     audio.onerror = (e) => console.error('Hover audio source error:', e);
     return audio;
   }, []);
 
   const clickSound = useMemo(() => {
-    const audio = new Audio('/sounds/click.mp3');
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/click.mp3`);
     audio.volume = 0.4;
     audio.onerror = (e) => console.error('Click audio source error:', e);
     return audio;

@@ -6,6 +6,7 @@ import Navigation from './components/ui/Navigation';
 import ExperienceDetail from './components/ui/ExperienceDetail';
 import SolarSystem from './components/solar-system/SolarSystem';
 import About from './components/ui/About';
+import BackgroundMusic from './components/common/BackgroundMusic';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <SolarSystem />
       <ExperienceDetail />
       <About />
+      <BackgroundMusic />
     </Layout>
   );
 }

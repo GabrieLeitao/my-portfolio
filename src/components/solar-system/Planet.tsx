@@ -1,13 +1,15 @@
 // src/components/solar-system/Planet.tsx
-import React, { useRef, useMemo, useState, useCallback } from 'react';
+import React, { useRef, useMemo, useState, useCallback, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { Select } from '@react-three/postprocessing';
 import { Experience } from '../../types';
-import { useStore, SelectedExperience } from '../../store';
-import { shallow } from 'zustand/shallow';
+import { useStore } from '../../store';
 import Satellite from './Satellite';
+import { useSoundEffects } from '../../hooks/useSoundEffects';
+import { useDynamicOrbit } from '../../hooks/useDynamicOrbit';
+import { renderDescription } from '../../utils/textUtils';
 
 interface PlanetProps {
   experience: Experience;
@@ -16,31 +18,38 @@ interface PlanetProps {
 const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const groupRef = useRef<THREE.Group>(null);
   const planetRef = useRef<THREE.Mesh>(null);
-  const angleRef = useRef(Math.random() * Math.PI * 2); // Random start position
+  const angleRef = useRef(0);
   
-  // Select state values individually for stability
+  useEffect(() => {
+    angleRef.current = Math.random() * Math.PI * 2;
+  }, []);
+  
+  const { playHover, playClick } = useSoundEffects();
+  const { getOrbitData } = useDynamicOrbit();
+
+  // Stable state selection
   const motionState = useStore((state) => state.motionState);
   const selectedExperience = useStore((state) => state.selectedExperience);
-  const hoveredExperience = useStore((state) => state.hoveredExperience);
   const aboutOpen = useStore((state) => state.aboutOpen);
-
-  // Select action creators separately for stable references
+  const dynamicDistancing = useStore((state) => state.dynamicDistancing);
   const selectExperience = useStore((state) => state.selectExperience);
   const setHoveredExperience = useStore((state) => state.setHoveredExperience);
 
   const [isHovered, setIsHovered] = useState(false);
-  const isSelected = selectedExperience?.data.id === experience.id;
+  const isSelected = selectedExperience?.data.name === experience.name;
 
   const geometry = useMemo(() => new THREE.SphereGeometry(experience.radius, 32, 32), [experience.radius]);
 
   const color = useMemo(() => {
     switch (experience.type) {
       case 'job':
-        return new THREE.Color('#ff8c00'); // Warmer color for jobs
+        return new THREE.Color('#ff8c00');
       case 'education':
-        return new THREE.Color('#6495ed'); // Cooler color for education
+        return new THREE.Color('#6495ed');
       case 'project':
-        return new THREE.Color('#98fb98'); // Neon/stylized for projects
+        return new THREE.Color('#98fb98');
+      case 'general':
+        return new THREE.Color('#ff69b4'); // Hot pink or something distinct
       default:
         return new THREE.Color('white');
     }
@@ -48,31 +57,28 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
 
   const handleClick = useCallback((event: any) => {
     event.stopPropagation();
-    // Do not allow selection if something is already selected
     if (selectedExperience) return;
 
     if (planetRef.current) {
-      const selection: SelectedExperience = { type: 'planet', data: experience };
-
+      playClick();
       const planetPosition = new THREE.Vector3();
       planetRef.current.getWorldPosition(planetPosition);
       
       const cameraOffset = new THREE.Vector3(0, experience.radius * 2, experience.radius * 5);
       const targetPosition = planetPosition.clone().add(cameraOffset);
       
-      // Use the atomic action to update all related state at once
-      selectExperience(selection, targetPosition, planetPosition);
+      selectExperience({ type: 'planet', data: experience }, targetPosition, planetPosition);
     }
-  }, [experience, selectedExperience, selectExperience]);
+  }, [experience, selectedExperience, selectExperience, playClick]);
 
   const handlePointerOver = useCallback((event: any) => {
     event.stopPropagation();
-    // Do not show hover effects if something is selected
     if (selectedExperience) return;
     
+    playHover();
     setIsHovered(true);
     setHoveredExperience({ type: 'planet', data: experience });
-  }, [experience, selectedExperience, setHoveredExperience]);
+  }, [experience, selectedExperience, setHoveredExperience, playHover]);
 
   const handlePointerOut = useCallback((event: any) => {
     event.stopPropagation();
@@ -80,32 +86,29 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
     setHoveredExperience(null);
   }, [setHoveredExperience]);
   
-  // Create a single, reusable vector for scaling
   const targetScaleVector = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, delta) => {
-    const isHoveredInStore = hoveredExperience?.data.id === experience.id;
+    // 1. Calculate target orbit parameters
+    const orbitData = dynamicDistancing ? getOrbitData(experience.name) : null;
+    const targetDistance = orbitData ? orbitData.distance : experience.distanceFromStar;
+    const targetOrbitalSpeed = orbitData ? orbitData.speed : experience.orbitalSpeed;
 
-    // Determine current speed multiplier based on global motionState ONLY
+    // 2. Determine motion multiplier
     let speedMultiplier = 1.0;
-    
-    if (motionState === 'selected') {
-      speedMultiplier = 0.05; // Global slowdown for everything
-    } else if (motionState === 'hover') {
-      speedMultiplier = 0.3; // Global slowdown for everything
-    }
+    if (motionState === 'selected') speedMultiplier = 0.05;
+    else if (motionState === 'hover') speedMultiplier = 0.3;
 
-    let speed = experience.orbitalSpeed * 60 * speedMultiplier;
+    const currentSpeed = targetOrbitalSpeed * 60 * speedMultiplier;
 
+    // 3. Update position
     if (groupRef.current) {
-      // Update accumulated angle to prevent "jump" when speed changes
-      angleRef.current += speed * delta;
+      angleRef.current += currentSpeed * delta;
       
-      const x = Math.sin(angleRef.current) * experience.distanceFromStar;
-      const z = Math.cos(angleRef.current) * experience.distanceFromStar;
+      const x = Math.sin(angleRef.current) * targetDistance;
+      const z = Math.cos(angleRef.current) * targetDistance;
       const inclination = experience.inclination || 0;
 
-      // Apply inclination (rotate around X axis)
       groupRef.current.position.set(
         x,
         Math.sin(inclination) * z,
@@ -113,19 +116,17 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       );
     }
 
+    // 4. Update mesh effects
     if (planetRef.current) {
-      // Self-rotation
       planetRef.current.rotation.y += 0.5 * delta;
-      
-      // Hover scale effect (1 -> 1.1)
       const targetScale = isHovered ? 1.1 : 1;
-      targetScaleVector.set(targetScale, targetScale, targetScale); // Update reusable vector
-      planetRef.current.scale.lerp(targetScaleVector, delta * 8); // Lerp to stable vector
+      targetScaleVector.set(targetScale, targetScale, targetScale);
+      planetRef.current.scale.lerp(targetScaleVector, delta * 8);
     }
   });
 
   return (
-    <group ref={groupRef} name={experience.id}>
+    <group ref={groupRef} name={experience.name}>
       <Select enabled={isSelected}>
         <mesh
           ref={planetRef}
@@ -140,7 +141,7 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
             emissiveIntensity={isHovered ? 0.6 : (isSelected ? 1.2 : 0.2)}
           />
           {isHovered && !isSelected && !aboutOpen && (
-            <Html distanceFactor={15} pointerEvents="none">
+            <Html pointerEvents="none" zIndexRange={[100, 0]}>
               <div className="tooltip" style={{ 
                 background: 'rgba(0,0,0,0.9)', 
                 color: 'white', 
@@ -153,9 +154,13 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
                 boxShadow: '0 8px 25px rgba(0,0,0,0.7)',
                 fontFamily: 'sans-serif'
               }}>
-                <h3 style={{ margin: '0 0 6px 0', fontSize: '1.4em' }}>{experience.name}</h3>
-                <p style={{ margin: '0 0 10px 0', opacity: 0.8, fontSize: '1.1em' }}>{experience.startDate} - {experience.endDate}</p>
-                <p style={{ margin: 0, fontSize: '1.0em', lineHeight: '1.5' }}>{experience.description}</p>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1em' }}>{experience.name}</h3>
+                <p style={{ margin: '0 0 8px 0', opacity: 0.8, fontSize: '0.9em' }}>
+                  {experience.startDate} - {experience.endDate}
+                </p>
+                <div style={{ margin: 0, fontSize: '0.85em', lineHeight: '1.4' }}>
+                  {renderDescription(experience.description)}
+                </div>
               </div>
             </Html>
           )}
@@ -163,9 +168,9 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       </Select>
       {experience.satellites && experience.satellites.map((sat, index) => (
         <Satellite
-          key={sat.id}
+          key={sat.name}
           satellite={sat}
-          parentPlanetId={experience.id}
+          parentPlanetName={experience.name}
           index={index}
         />
       ))}

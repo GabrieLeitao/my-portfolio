@@ -7,11 +7,11 @@ import { useStore } from '../../store';
 
 interface SatelliteProps {
   satellite: SatelliteType;
-  parentPlanetId: string;
+  parentPlanetName: string;
   index: number;
 }
 
-const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId, index }) => {
+const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetName, index }) => {
   const satelliteRef = useRef<THREE.Mesh>(null);
   
   // Select state values individually for stability
@@ -19,7 +19,7 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId, index 
   const selectedExperience = useStore((state) => state.selectedExperience);
 
   const geometry = useMemo(() => new THREE.SphereGeometry(satellite.radius, 16, 16), [satellite.radius]);
-  const isParentSelected = selectedExperience?.type === 'planet' && selectedExperience.data.id === parentPlanetId;
+  const isParentSelected = selectedExperience?.type === 'planet' && selectedExperience.data.name === parentPlanetName;
 
   // Use higher base speed for visibility
   const angleRef = useRef(index * (Math.PI * 2 / 3));
@@ -36,7 +36,7 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId, index 
         speedMultiplier = 0.3;
       }
 
-      let currentSpeed = satellite.speed * 30 * speedMultiplier;
+      const currentSpeed = satellite.speed * 30 * speedMultiplier;
       let targetDistance = satellite.distanceFromPlanet;
 
       if (motionState === 'selected' && isParentSelected) {
@@ -69,7 +69,7 @@ const Satellite: React.FC<SatelliteProps> = ({ satellite, parentPlanetId, index 
     <Select enabled={isParentSelected}>
       <mesh
         ref={satelliteRef}
-        name={satellite.id}
+        name={satellite.name}
         geometry={geometry}
         onClick={(e) => e.stopPropagation()}
       >

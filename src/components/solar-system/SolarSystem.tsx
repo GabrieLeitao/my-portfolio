@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import React, { useRef } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
@@ -48,7 +48,7 @@ const SceneContent: React.FC = () => {
 
       {experiences.map((exp) => (
         <Planet
-          key={exp.id}
+          key={exp.name}
           experience={exp}
         />
       ))}

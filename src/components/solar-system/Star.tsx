@@ -21,10 +21,11 @@ const Star: React.FC<StarProps> = ({ size = 1, color = 'gold' }) => {
     <>
       <mesh ref={starRef}>
         <sphereGeometry args={[size, 32, 32]} />
-        <meshStandardMaterial emissive={color} emissiveIntensity={5} />
+        <meshStandardMaterial emissive={color} emissiveIntensity={10} color={color} />
       </mesh>
-      {/* Primary light source from the star */}
-      <pointLight intensity={10} distance={100} decay={2} color="white" />
+      {/* Primary light source from the star - significantly boosted */}
+      <pointLight intensity={50} distance={200} decay={1} color="white" />
+      <pointLight intensity={20} distance={50} decay={0.5} color={color} />
     </>
   );
 };

@@ -1,7 +1,6 @@
 // src/types/index.ts
 
 export interface Satellite {
-  id: string;
   name: string;
   description: string;
   technologies: string[];
@@ -11,13 +10,11 @@ export interface Satellite {
 }
 
 export interface Experience {
-  id: string;
   name: string;
-  type: 'job' | 'project' | 'education';
+  type: 'job' | 'project' | 'education' | 'general';
   description: string;
   startDate: string;
   endDate: string;
-  position?: string; // Optional, for jobs
   technologies: string[];
   radius: number; // For rendering size of the planet
   distanceFromStar: number; // Distance from the central star

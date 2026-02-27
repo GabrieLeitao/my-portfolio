@@ -1,8 +1,10 @@
+// src/components/solar-system/TimelineGrid.tsx
 import React from 'react';
 import * as THREE from 'three';
 import { Html } from '@react-three/drei';
 import { Experience } from '../../types';
 import { useStore } from '../../store';
+import { useDynamicOrbit, parseDate } from '../../hooks/useDynamicOrbit';
 
 interface TimelineGridProps {
   experiences: Experience[];
@@ -10,15 +12,27 @@ interface TimelineGridProps {
 
 const TimelineGrid: React.FC<TimelineGridProps> = ({ experiences }) => {
   const aboutOpen = useStore((state) => state.aboutOpen);
+  const dynamicDistancing = useStore((state) => state.dynamicDistancing);
+  const { yearRings } = useDynamicOrbit();
 
-  // Create a set of unique years from the experience data
-  const years = Array.from(new Set(experiences.map(e => new Date(e.startDate).getFullYear())));
-
-  const rings = years.map(year => {
-    // Find the experience closest to the start of this year to determine the ring's distance
-    const expForYear = experiences.find(e => new Date(e.startDate).getFullYear() === year);
-    return { year, distance: expForYear?.distanceFromStar || 0 };
-  }).filter(ring => ring.distance > 0);
+  // Extract rings logic
+  const rings = dynamicDistancing ? yearRings : (() => {
+    // Manual fallback logic
+    const yearMap = new Map<number, number>();
+    experiences.forEach(exp => {
+      const year = parseDate(exp.startDate).getFullYear();
+      const currentDist = yearMap.get(year);
+      // Use the minimum distance for that year's orbital band to represent the ring.
+      if (currentDist === undefined || exp.distanceFromStar < currentDist) {
+        yearMap.set(year, exp.distanceFromStar);
+      }
+    });
+    return Array.from(yearMap.entries())
+      .map(([year, distance]) => ({ year, distance }))
+      .filter(ring => ring.distance > 0)
+      // Sort by distance ascending: closest to sun (most recent years) comes first
+      .sort((a, b) => a.distance - b.distance);
+  })();
 
   return (
     <group rotation={[Math.PI / 2, 0, 0]}>
@@ -33,16 +47,17 @@ const TimelineGrid: React.FC<TimelineGridProps> = ({ experiences }) => {
               position={[distance, 0, 0]}
               distanceFactor={20}
               center
+              zIndexRange={[10, 0]}
             >
               <div style={{
                 color: 'rgba(255, 255, 255, 0.6)',
                 fontFamily: 'monospace',
-                fontSize: '12px',
+                fontSize: '20px',
                 userSelect: 'none',
                 pointerEvents: 'none',
                 whiteSpace: 'nowrap'
               }}>
-                {year.toString()}
+                {year}
               </div>
             </Html>
           )}
@@ -53,4 +68,3 @@ const TimelineGrid: React.FC<TimelineGridProps> = ({ experiences }) => {
 };
 
 export default TimelineGrid;
-

@@ -53,7 +53,7 @@ const BackgroundMusic: React.FC = () => {
       loop
       preload="auto"
     >
-      <source src="https://raw.githubusercontent.com/the-hyphen/audio-assets/main/space-ambient.mp3" type="audio/mpeg" />
+      <source src="/sounds/ambient.mp3" type="audio/mpeg" />
       Your browser does not support the audio element.
     </audio>
   );

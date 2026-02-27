@@ -14,19 +14,12 @@ const SceneContent: React.FC = () => {
   const isSelected = useStore((state) => state.selectedExperience !== null);
   const dofRef = useRef<any>(null);
   const bloomRef = useRef<any>(null);
-  const ambientLightRef = useRef<THREE.AmbientLight>(null);
   const { scene } = useThree();
 
-  useFrame((_, delta) => {
-    if (dofRef.current) {
-      const targetBokeh = isSelected ? 2 : 0;
-      dofRef.current.bokehScale = THREE.MathUtils.lerp(
-        dofRef.current.bokehScale,
-        targetBokeh,
-        delta * 2
-      );
-    }
+  const dummyLight = React.useMemo(() => new THREE.PointLight(), []);
 
+  // Initialize lights for SelectiveBloom after mount
+  React.useLayoutEffect(() => {
     if (bloomRef.current) {
       const lights: THREE.Light[] = [];
       scene.traverse((obj) => {
@@ -36,11 +29,23 @@ const SceneContent: React.FC = () => {
         bloomRef.current.lights = lights;
       }
     }
+  }, [scene]);
+
+  useFrame((_, delta) => {
+    // 2. Update DOF effects
+    if (dofRef.current) {
+      const targetBokeh = isSelected ? 2 : 0;
+      dofRef.current.bokehScale = THREE.MathUtils.lerp(
+        dofRef.current.bokehScale,
+        targetBokeh,
+        delta * 2
+      );
+    }
   });
 
   return (
     <Selection>
-      <ambientLight ref={ambientLightRef} intensity={0.6} />
+      <ambientLight intensity={0.6} />
       <Stars radius={200} depth={50} count={5000} factor={4} saturation={0} fade />
 
       <TimelineGrid experiences={experiences} />
@@ -57,8 +62,8 @@ const SceneContent: React.FC = () => {
       <EffectComposer>
         <SelectiveBloom
           ref={bloomRef}
-          lights={[]} // Start with empty, will be updated in useFrame
-          selectionLayer={10}
+          lights={[dummyLight]} // Start with dummy
+          selectionLayer={1} 
           luminanceThreshold={0.01}
           luminanceSmoothing={0.9}
           height={300}

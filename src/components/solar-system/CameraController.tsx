@@ -22,20 +22,19 @@ const CameraController: React.FC = () => {
   const saveCameraState = useStore((state) => state.saveCameraState);
   const prevCameraStateRef = useRef(cameraState);
 
-  // Save camera state before starting a transition from 'free' mode
+  const lastSavedPosRef = useRef(new THREE.Vector3());
+
+  // Save camera state only when a transition starts from 'free' mode
   useEffect(() => {
-    if (cameraState === 'transition' && prevCameraStateRef.current === 'free' && controlsRef.current) {
-      // Use useStore.getState() to avoid extra re-renders from the function reference itself
+    if (cameraState === 'transition' && prevCameraStateRef.current === 'free') {
       const state = useStore.getState();
-      state.saveCameraState(camera.position, controlsRef.current.target);
+      // Ensure we have controls before saving
+      if (controlsRef.current) {
+        state.saveCameraState(camera.position, controlsRef.current.target);
+      }
     }
     prevCameraStateRef.current = cameraState;
-  }, [cameraState]);
-
-  useEffect(() => {
-    // Set initial camera position once
-    camera.position.set(0, 20, 50);
-  }, [camera]);
+  }, [cameraState, camera]);
 
   useFrame((_, delta) => {
     if (!controlsRef.current) return;
@@ -57,13 +56,12 @@ const CameraController: React.FC = () => {
         }
       }
     } else if (cameraState === 'free') {
-      // Always center on the sun when in free mode
       currentLookAt = sunPos;
     }
 
     if (cameraState === 'transition' || cameraState === 'exit') {
-      // Slower, more graceful speed
-      const speed = 2.5;
+      // Significantly faster speed for exit to return control quickly
+      const speed = cameraState === 'exit' ? 8.0 : 4.0;
       const alpha = 1 - Math.exp(-speed * delta);
       
       camera.position.lerp(currentCameraPos, alpha);
@@ -73,13 +71,16 @@ const CameraController: React.FC = () => {
       const dist = camera.position.distanceTo(currentCameraPos);
       const targetDist = controlsRef.current.target.distanceTo(currentLookAt);
       
-      const threshold = 0.05;
+      // Snappier threshold for exit
+      const threshold = cameraState === 'exit' ? 0.2 : 0.05;
       
       if (dist < threshold && targetDist < threshold) {
+        // Use getState().setCameraState to avoid re-render cycles within useFrame
+        const state = useStore.getState();
         if (cameraState === 'transition') {
-          setCameraState('locked');
+          state.setCameraState('locked');
         } else if (cameraState === 'exit') {
-          setCameraState('free');
+          state.setCameraState('free');
         }
       }
     } else if (cameraState === 'locked') {

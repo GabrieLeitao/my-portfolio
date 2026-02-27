@@ -5,6 +5,10 @@ import { experiences, personalInfo, skills } from '../../data/experiences';
 import { renderDescription } from '../../utils/textUtils';
 import { parseDate } from '../../hooks/useDynamicOrbit';
 
+import emailIcon from '../../assets/icons/email.svg';
+import phoneIcon from '../../assets/icons/phone.svg';
+import locationIcon from '../../assets/icons/location.svg';
+
 const About: React.FC = () => {
   const aboutOpen = useStore((state) => state.aboutOpen);
   const setAboutOpen = useStore((state) => state.setAboutOpen);
@@ -13,7 +17,6 @@ const About: React.FC = () => {
 
   // Prioritize 'Present' then sort by start date DESC
   const sortByRecency = (a: any, b: any) => {
-    // Force LISAT to be at the top
     const LISAT_NAME = 'CDH Department Member @ LISAT Team';
     if (a.name === LISAT_NAME) return -1;
     if (b.name === LISAT_NAME) return 1;
@@ -21,6 +24,14 @@ const About: React.FC = () => {
     if (a.endDate === 'Present' && b.endDate !== 'Present') return -1;
     if (a.endDate !== 'Present' && b.endDate === 'Present') return 1;
     return parseDate(b.startDate).getTime() - parseDate(a.startDate).getTime();
+  };
+
+  const iconStyle = {
+    width: '16px',
+    height: '16px',
+    marginRight: '8px',
+    verticalAlign: 'middle',
+    filter: 'invert(1)' // Makes SVGs white
   };
 
   return (
@@ -53,7 +64,7 @@ const About: React.FC = () => {
         }
         .about-grid {
           display: grid;
-          grid-template-columns: 2fr 1fr;
+          grid-template-columns: 1fr 2fr;
           gap: 40px;
           width: 100%;
         }
@@ -95,17 +106,109 @@ const About: React.FC = () => {
         <header className="about-header" style={{ marginBottom: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', paddingTop: '10px' }}>
           <h1 style={{ fontSize: '3rem', marginBottom: '10px', color: '#ffd700' }}>{personalInfo.name}</h1>
           <p style={{ fontSize: '1.4rem', opacity: 0.9, marginBottom: '20px' }}>{personalInfo.title}</p>
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.9rem', opacity: 0.7 }}>
-            <span>📧 {personalInfo.email}</span>
-            {personalInfo.phone && (<span>📱 {personalInfo.phone}</span>)}
-            <span>📍 {personalInfo.location}</span>
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.9rem', opacity: 0.7, alignItems: 'center' }}>
+            <span style={{display: 'flex', alignItems: 'center'}}><img src={emailIcon} alt="Email" style={iconStyle} /> {personalInfo.email}</span>
+            {personalInfo.phone && (<span style={{display: 'flex', alignItems: 'center'}}><img src={phoneIcon} alt="Phone" style={iconStyle} /> {personalInfo.phone}</span>)}
+            <span style={{display: 'flex', alignItems: 'center'}}><img src={locationIcon} alt="Location" style={iconStyle} /> {personalInfo.location}</span>
             <a href={personalInfo.github} target="_blank" rel="noreferrer" style={{ color: '#6495ed' }}>GitHub</a>
             <a href={personalInfo.linkedin} target="_blank" rel="noreferrer" style={{ color: '#6495ed' }}>LinkedIn</a>
           </div>
         </header>
 
         <div className="about-grid">
+          <aside>
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Languages</h2>
+              {skills.programmingLanguages.map(lang => (
+                <div key={lang.name} style={{ marginBottom: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', fontSize: '0.9rem' }}>
+                    <span>{lang.name}</span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div
+                          key={i}
+                          style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            backgroundColor: i <= lang.level ? '#ffd700' : 'transparent',
+                            border: '1px solid #ffd700'
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Spoken</h2>
+              {personalInfo.languages.map(lang => (
+                <div key={lang.name} style={{ marginBottom: '10px', fontSize: '0.95rem' }}>
+                  <strong>{lang.name}</strong>: <span style={{ opacity: 0.7 }}>{lang.level}</span>
+                </div>
+              ))}
+            </section>
+
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Education</h2>
+              {experiences
+                .filter(exp => exp.type === 'education' || exp.type === 'main-education')
+                .sort(sortByRecency)
+                .map(edu => (
+                <div key={edu.name} style={{ marginBottom: '20px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', color: '#6495ed' }}>{edu.name}</h3>
+                  <p style={{ margin: '5px 0', fontSize: '0.85rem', opacity: 0.7 }}>{edu.startDate} - {edu.endDate}</p>
+                </div>
+              ))}
+            </section>
+
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Tools</h2>
+              <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem', lineHeight: '1.6', opacity: 0.8 }}>
+                {skills.tools.map(q => (
+                  <li key={q} style={{ marginBottom: '8px' }}>{q}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Certificates</h2>
+              <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem', lineHeight: '1.6', opacity: 0.8 }}>
+                {skills.otherQualifications.map(q => (
+                  <li key={q} style={{ marginBottom: '8px' }}>{q}</li>
+                ))}
+              </ul>
+            </section>
+          </aside>
           <div>
+            <section style={{ marginBottom: '40px' }}>
+              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', color: '#6495ed', marginBottom: '20px', borderBottom: '1px solid rgba(255,140,0,0.2)', paddingBottom: '5px' }}>Education</h2>
+              {experiences
+                .filter(exp => exp.type === 'main-education')
+                .map(job => (
+                <div key={job.name} style={{ marginBottom: '30px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '5px' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem' }}>
+                      {job.name}
+                    </h3>
+                    <span style={{ opacity: 0.6, fontSize: '0.8rem' }}>{job.startDate} - {job.endDate}</span>
+                  </div>
+                  <div style={{ margin: '10px 0', fontSize: '0.95rem', lineHeight: '1.5', opacity: 0.9 }}>
+                    {renderDescription(job.description, '#ff8c00')}
+                  </div>
+                  {job.technologies && job.technologies.length > 0 && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {job.technologies.map(tech => (
+                        <span key={tech} style={{ fontSize: '0.75rem', background: 'rgba(255,140,0,0.1)', border: '1px solid rgba(255,140,0,0.3)', padding: '2px 8px', borderRadius: '12px' }}>{tech}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+
             <section style={{ marginBottom: '40px' }}>
               <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', color: '#ff8c00', marginBottom: '20px', borderBottom: '1px solid rgba(255,140,0,0.2)', paddingBottom: '5px' }}>Experience</h2>
               {experiences
@@ -156,54 +259,6 @@ const About: React.FC = () => {
               ))}
             </section>
           </div>
-
-          <aside>
-            <section style={{ marginBottom: '40px' }}>
-              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Languages</h2>
-              {skills.programmingLanguages.map(lang => (
-                <div key={lang.name} style={{ marginBottom: '15px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '0.9rem' }}>
-                    <span>{lang.name}</span>
-                    <span style={{ opacity: 0.6 }}>{lang.strength}%</span>
-                  </div>
-                  <div style={{ width: '100%', height: '6px', background: '#333', borderRadius: '3px' }}>
-                    <div style={{ width: `${lang.strength}%`, height: '100%', background: '#ffd700', borderRadius: '3px' }} />
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            <section style={{ marginBottom: '40px' }}>
-              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Spoken</h2>
-              {personalInfo.languages.map(lang => (
-                <div key={lang.name} style={{ marginBottom: '10px', fontSize: '0.95rem' }}>
-                  <strong>{lang.name}</strong>: <span style={{ opacity: 0.7 }}>{lang.level}</span>
-                </div>
-              ))}
-            </section>
-
-            <section style={{ marginBottom: '40px' }}>
-              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Education</h2>
-              {experiences
-                .filter(exp => exp.type === 'education')
-                .sort(sortByRecency)
-                .map(edu => (
-                <div key={edu.name} style={{ marginBottom: '20px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1rem', color: '#6495ed' }}>{edu.name}</h3>
-                  <p style={{ margin: '5px 0', fontSize: '0.85rem', opacity: 0.7 }}>{edu.startDate} - {edu.endDate}</p>
-                </div>
-              ))}
-            </section>
-
-            <section style={{ marginBottom: '40px' }}>
-              <h2 style={{ textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px' }}>Certificates</h2>
-              <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem', lineHeight: '1.6', opacity: 0.8 }}>
-                {skills.otherQualifications.map(q => (
-                  <li key={q} style={{ marginBottom: '8px' }}>{q}</li>
-                ))}
-              </ul>
-            </section>
-          </aside>
         </div>
       </div>
     </div>

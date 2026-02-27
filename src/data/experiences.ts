@@ -18,12 +18,14 @@ export const personalInfo = {
 
 export const skills = {
   programmingLanguages: [
-    { name: 'C/C++', strength: 60 },
-    { name: 'Python', strength: 50},
-    { name: 'TypeScript/JavaScript', strength: 20 }
+    { name: 'C', level: 4 },
+    { name: 'Python', level: 3 },
+    { name: 'C++', level: 3 },
+    { name: 'TypeScript/JavaScript', level: 2 },
+    { name: 'SQL', level: 1}
   ],
   frameworks: ['React', 'Node.js', 'FastAPI', 'Three.js'],
-  tools: ['FreeRTOS', 'Docker', 'Linux'],
+  tools: ['Git', 'Linux'],
   otherQualifications: [
     'Cambridge English C1 Advanced 2023, Overall Score: 198'
   ]
@@ -42,33 +44,33 @@ export const experiences: Experience[] = [
     radius: 0.9,
     distanceFromStar: 10,
     orbitalSpeed: 0.00115, 
-    inclination: 0.05,
+    inclination: 3,
     satellites: [],
   },
   {
     name: 'CDH Department Member @ LISAT Team',
     type: 'job',
-    description: 'I am responsible for data handling and memory management on CDH Department. LISAT is made up of 39 students mostly from Instituto Superior Técnico, working together on Portugal\'s next CubeSat.',
+    description: 'I am responsible for data handling and memory management in CDH Department of LISAT Team. LISAT is made up of 39 students mostly from Instituto Superior Técnico, working together on Portugal\'s next CubeSat.',
     startDate: '02/09/2024',
     endDate: 'Present',
     technologies: [],
     radius: 1.4,
     distanceFromStar: 12,
     orbitalSpeed: 0.001, 
-    inclination: 0.05,
+    inclination: 3,
     satellites: [],
   },
   {
     name: 'BSc Aerospace Engineering',
-    type: 'education',
-    description: 'Finishing Bachelor of Aerospace Engineering.',
+    type: 'main-education',
+    description: 'Currently finishing my Bachelor\'s degree of Science in Aerospace Engineering at Instituto Superior Técnico, Lisboa, Portugal.',
     startDate: '11/09/2023',
     endDate: 'Present',
     technologies: ['SolidWorks', 'Xilinx Vivado', 'MATLAB', 'Simulink'],
     radius: 1.3,
     distanceFromStar: 14,
     orbitalSpeed: 0.00085,
-    inclination: 0.02,
+    inclination: 1,
     satellites: [],
   },
   {
@@ -108,7 +110,7 @@ export const experiences: Experience[] = [
     radius: 0.8,
     distanceFromStar: 8,
     orbitalSpeed: 0.0015,
-    inclination: 0.02,
+    inclination: 5,
     satellites: [],
   },
   {
@@ -123,7 +125,7 @@ export const experiences: Experience[] = [
     radius: 0.6,
     distanceFromStar: 18,
     orbitalSpeed: 0.0007,
-    inclination: 0.02,
+    inclination: -4,
     satellites: [],
   },
   {
@@ -136,7 +138,7 @@ export const experiences: Experience[] = [
     radius: 0.5,
     distanceFromStar: 22,
     orbitalSpeed: 0.0006,
-    inclination: 7,
+    inclination: 11,
     satellites: [
       {
         name: 'Integral Calculus',
@@ -176,26 +178,26 @@ export const experiences: Experience[] = [
     name: 'CS50\'s Introduction to Computer Science',
     type: 'education',
     description: 'CS50x: online course on edX from Harvard University.',
-    startDate: '01/02/2022',
+    startDate: '21/02/2022',
     endDate: '01/08/2023',
     technologies: ['C', 'Python', 'HTML', 'CSS'],
     radius: 0.5,
     distanceFromStar: 26,
     orbitalSpeed: 0.00055,
-    inclination: 14,
+    inclination: 9,
     satellites: []
   },
   {
     name: 'Project Quark!',
     type: 'education',
     description: 'Project Quark! is an extracurricular physics school for highschool students.',
-    startDate: '01/02/2022',
-    endDate: '01/04/2022',
+    startDate: '26/02/2022',
+    endDate: '09/04/2022',
     technologies: [],
     radius: 0.5,
     distanceFromStar: 26,
     orbitalSpeed: 0.00055,
-    inclination: 20,
+    inclination: 12,
     satellites: []
   },
 ];

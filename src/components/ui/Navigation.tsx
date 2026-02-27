@@ -2,6 +2,9 @@ import React from 'react';
 import { useStore } from '../../store';
 import { personalInfo } from '../../data/experiences';
 
+import soundOnIcon from '../../assets/icons/sound-on.svg';
+import soundOffIcon from '../../assets/icons/sound-off.svg';
+
 const Navigation: React.FC = () => {
   const setAboutOpen = useStore((state) => state.setAboutOpen);
   const isMuted = useStore((state) => state.isMuted);
@@ -10,6 +13,12 @@ const Navigation: React.FC = () => {
   const handleAboutClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setAboutOpen(true);
+  };
+
+  const iconStyle = {
+    width: '20px',
+    height: '20px',
+    filter: 'invert(1)'
   };
 
   return (
@@ -62,7 +71,7 @@ const Navigation: React.FC = () => {
           onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
           title={isMuted ? "Unmute" : "Mute"}
         >
-          {isMuted ? '🔇' : '🔊'}
+          <img src={isMuted ? soundOffIcon : soundOnIcon} alt="Sound toggle" style={iconStyle} />
         </button>
       </div>
     </nav>

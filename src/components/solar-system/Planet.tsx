@@ -44,6 +44,8 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
         return new THREE.Color('#ff8c00');
       case 'education':
         return new THREE.Color('#6495ed');
+      case 'main-education':
+        return new THREE.Color('#6495ed');
       case 'project':
         return new THREE.Color('#98fb98');
       case 'general':
@@ -105,12 +107,12 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
       
       const x = Math.sin(angleRef.current) * targetDistance;
       const z = Math.cos(angleRef.current) * targetDistance;
-      const inclination = experience.inclination || 0;
+      const inclinationInRadians = (experience.inclination || 0) * (Math.PI / 180);
 
       groupRef.current.position.set(
         x,
-        Math.sin(inclination) * z,
-        Math.cos(inclination) * z
+        Math.sin(inclinationInRadians) * z,
+        Math.cos(inclinationInRadians) * z
       );
     }
 

@@ -82,7 +82,7 @@ const ExperienceDetail: React.FC = () => {
 
         {data.technologies && data.technologies.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
-            <strong>Technologies</strong>
+            {/* <strong>Technologies</strong> */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
               {data.technologies.map(tech => (
                 <span key={tech} style={{

@@ -65,7 +65,7 @@ const SceneContent: React.FC = () => {
         <SelectiveBloom
           ref={bloomRef}
           lights={[dummyLight]} 
-          selectionLayer={10} 
+          selectionLayer={1} 
           luminanceThreshold={0.01}
           luminanceSmoothing={0.9}
           height={300}

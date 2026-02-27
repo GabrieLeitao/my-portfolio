@@ -11,7 +11,7 @@ export interface Satellite {
 
 export interface Experience {
   name: string;
-  type: 'job' | 'project' | 'education' | 'general';
+  type: 'job' | 'project' | 'main-education' | 'education' | 'general';
   description: string;
   startDate: string;
   endDate: string;
@@ -19,7 +19,7 @@ export interface Experience {
   radius: number; // For rendering size of the planet
   distanceFromStar: number; // Distance from the central star
   orbitalSpeed: number; // Orbital speed around the star
-  inclination?: number; // Optional orbital inclination in radians
+  inclination?: number; // Optional orbital inclination in degrees
   satellites?: Satellite[];
 }
 

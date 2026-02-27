@@ -28,17 +28,21 @@ const CameraController: React.FC = () => {
       controlsRef.current.target.set(0, 0, 0);
       controlsRef.current.update();
     }
+    // We only want this on mount, but if camera changes (rarely) it's okay
   }, [camera]);
 
   // Save camera state only when a transition starts
   useEffect(() => {
+    // Only save if we are ENTERING a transition from free state
     if (cameraState === 'transition' && prevCameraStateRef.current === 'free') {
       if (controlsRef.current) {
         useStore.getState().saveCameraState(camera.position, controlsRef.current.target);
       }
     }
     prevCameraStateRef.current = cameraState;
-  }, [cameraState, camera.position]);
+    // Removing camera.position from deps to avoid running every frame during transition
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraState]);
 
   useFrame((_, delta) => {
     if (!controlsRef.current) return;
@@ -61,7 +65,6 @@ const CameraController: React.FC = () => {
     }
 
     if (cameraState === 'transition' || cameraState === 'exit') {
-      // Return to the original speed that was smooth
       const speed = cameraState === 'exit' ? 4.0 : 3.0;
       const alpha = 1 - Math.exp(-speed * delta);
       
@@ -72,27 +75,32 @@ const CameraController: React.FC = () => {
       const dist = camera.position.distanceTo(targetCameraPos);
       const targetDist = controlsRef.current.target.distanceTo(targetLookAt);
       
-      if (dist < 0.01 && targetDist < 0.01) {
+      // Threshold for completing transition
+      if (dist < 0.005 && targetDist < 0.005) {
+        // Force snap to final position to prevent any jitter
         camera.position.copy(targetCameraPos);
         controlsRef.current.target.copy(targetLookAt);
         controlsRef.current.update();
         
         const state = useStore.getState();
-        if (cameraState === 'transition') {
+        // Only set state if it hasn't changed already to prevent loops
+        if (cameraState === 'transition' && state.cameraState !== 'locked') {
           state.setCameraState('locked');
-        } else {
+        } else if (cameraState === 'exit' && state.cameraState !== 'free') {
           state.setCameraState('free');
         }
       }
     } else if (cameraState === 'locked') {
+      // In locked mode, we strictly follow the target position and lookAt
       camera.position.copy(targetCameraPos);
       controlsRef.current.target.copy(targetLookAt);
       controlsRef.current.update();
     } else if (cameraState === 'free') {
-      // In free mode, we only ensure the target stays centered on the sun
-      // but we DON'T force camera position so OrbitControls can work
-      controlsRef.current.target.copy(sunPos);
-      controlsRef.current.update();
+      // In free mode, ensure the target stays centered on the sun for OrbitControls
+      if (!controlsRef.current.target.equals(sunPos)) {
+        controlsRef.current.target.copy(sunPos);
+        controlsRef.current.update();
+      }
     }
   });
 

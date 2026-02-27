@@ -1,7 +1,7 @@
 // src/hooks/useSolarSystemControls.ts
 import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+// import { OrbitControls } from '@react-three/drei'; // No longer used
 
 const useSolarSystemControls = () => {
   const { camera, gl } = useThree();

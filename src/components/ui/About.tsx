@@ -4,10 +4,13 @@ import { useStore } from '../../store';
 import { experiences, personalInfo, skills } from '../../data/experiences';
 import { renderDescription } from '../../utils/textUtils';
 import { parseDate } from '../../hooks/useDynamicOrbit';
+import { Experience } from '../../types';
 
 import emailIcon from '../../assets/icons/email.svg';
 import phoneIcon from '../../assets/icons/phone.svg';
 import locationIcon from '../../assets/icons/location.svg';
+
+import '../../styles/print.css';
 
 const About: React.FC = () => {
   const aboutOpen = useStore((state) => state.aboutOpen);
@@ -16,7 +19,7 @@ const About: React.FC = () => {
   if (!aboutOpen) return null;
 
   // Prioritize 'Present' then sort by start date DESC
-  const sortByRecency = (a: any, b: any) => {
+  const sortByRecency = (a: Experience, b: Experience) => {
     const LISAT_NAME = 'CDH Department Member @ LISAT Team';
     if (a.name === LISAT_NAME) return -1;
     if (b.name === LISAT_NAME) return 1;
@@ -31,11 +34,15 @@ const About: React.FC = () => {
     height: '16px',
     marginRight: '8px',
     verticalAlign: 'middle',
-    filter: 'invert(1)' // Makes SVGs white
+    filter: 'invert(1)' // White for on-screen dark mode
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
-    <div style={{
+    <div className="printable-container" style={{
       position: 'absolute',
       top: 0,
       left: 0,
@@ -46,14 +53,13 @@ const About: React.FC = () => {
       zIndex: 1000,
       padding: '20px',
       overflowY: 'auto',
-      overflowX: 'hidden', // Prevent horizontal scroll
+      overflowX: 'hidden',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       backdropFilter: 'blur(10px)',
       boxSizing: 'border-box'
     }}>
-      {/* Add responsive styles */}
       <style>{`
         .about-content {
           max-width: 900px;
@@ -79,9 +85,10 @@ const About: React.FC = () => {
         }
       `}</style>
 
-      <div className="about-content">
+      <div className="about-content printable-area">
         <button 
           onClick={() => setAboutOpen(false)}
+          className="no-print"
           style={{
             position: 'absolute',
             top: 0,
@@ -103,7 +110,26 @@ const About: React.FC = () => {
           &times;
         </button>
 
-        <header className="about-header" style={{ marginBottom: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', paddingTop: '10px' }}>
+        <button 
+          onClick={handlePrint}
+          className="no-print"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            background: 'rgba(255,255,255,0.1)',
+            border: 'none',
+            color: 'white',
+            padding: '10px 20px',
+            borderRadius: '20px',
+            cursor: 'pointer',
+            zIndex: 10
+          }}
+        >
+          Print to PDF
+        </button>
+
+        <header className="about-header" style={{ marginTop: '40px', marginBottom: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', paddingTop: '10px' }}>
           <h1 style={{ fontSize: '3rem', marginBottom: '10px', color: '#ffd700' }}>{personalInfo.name}</h1>
           <p style={{ fontSize: '1.4rem', opacity: 0.9, marginBottom: '20px' }}>{personalInfo.title}</p>
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.9rem', opacity: 0.7, alignItems: 'center' }}>

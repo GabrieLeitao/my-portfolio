@@ -22,6 +22,7 @@ export const skills = {
     { name: 'Python', level: 3 },
     { name: 'C++', level: 3 },
     { name: 'TypeScript/JavaScript', level: 2 },
+    { name: 'HTML/CSS', level: 2 },
     { name: 'SQL', level: 1}
   ],
   frameworks: ['React', 'Node.js', 'FastAPI', 'Three.js'],

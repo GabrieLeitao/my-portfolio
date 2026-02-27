@@ -22,7 +22,7 @@ const Navigation: React.FC = () => {
   };
 
   return (
-    <nav style={{
+    <nav className="no-print" style={{
       position: 'absolute',
       top: '10px',
       left: '10px',

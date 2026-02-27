@@ -22,7 +22,6 @@
   },
   "include": [
     "src",
-    "vite.config.ts",
-    "eslint.config.mjs"
+    "vite.config.ts"
   ]
 }

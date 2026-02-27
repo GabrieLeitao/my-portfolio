@@ -4,7 +4,6 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { Select } from '@react-three/postprocessing';
-import { shallow } from 'zustand/shallow';
 import { Experience } from '../../types';
 import { useStore } from '../../store';
 import Satellite from './Satellite';
@@ -28,22 +27,13 @@ const Planet: React.FC<PlanetProps> = ({ experience }) => {
   const { playHover, playClick } = useSoundEffects();
   const { getOrbitData } = useDynamicOrbit();
 
-  // Stable state selection
-  const { 
-    motionState, 
-    selectedExperience, 
-    aboutOpen, 
-    dynamicDistancing, 
-    selectExperience, 
-    setHoveredExperience 
-  } = useStore((state) => ({
-    motionState: state.motionState,
-    selectedExperience: state.selectedExperience,
-    aboutOpen: state.aboutOpen,
-    dynamicDistancing: state.dynamicDistancing,
-    selectExperience: state.selectExperience,
-    setHoveredExperience: state.setHoveredExperience
-  }), shallow);
+  // Individual state selection for maximum stability
+  const motionState = useStore((state) => state.motionState);
+  const selectedExperience = useStore((state) => state.selectedExperience);
+  const aboutOpen = useStore((state) => state.aboutOpen);
+  const dynamicDistancing = useStore((state) => state.dynamicDistancing);
+  const selectExperience = useStore((state) => state.selectExperience);
+  const setHoveredExperience = useStore((state) => state.setHoveredExperience);
 
   const [isHovered, setIsHovered] = useState(false);
   const isSelected = selectedExperience?.data.name === experience.name;

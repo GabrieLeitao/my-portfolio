@@ -14,14 +14,7 @@ const SceneContent: React.FC = () => {
   const isSelected = useStore((state) => state.selectedExperience !== null);
   const dofRef = useRef<any>(null);
   const bloomRef = useRef<any>(null);
-  const [ambientLight, setAmbientLight] = React.useState<THREE.AmbientLight | null>(null);
-  
-  const ambientLightRef = React.useCallback((node: THREE.AmbientLight | null) => {
-    if (node !== null) {
-      setAmbientLight(node);
-    }
-  }, []);
-
+  const ambientLightRef = useRef<THREE.AmbientLight>(null);
   const { scene } = useThree();
 
   useFrame((_, delta) => {
@@ -64,7 +57,7 @@ const SceneContent: React.FC = () => {
       <EffectComposer>
         <SelectiveBloom
           ref={bloomRef}
-          lights={ambientLight ? [ambientLight] : []}
+          lights={[]} // Start with empty, will be updated in useFrame
           selectionLayer={10}
           luminanceThreshold={0.01}
           luminanceSmoothing={0.9}

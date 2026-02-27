@@ -6,16 +6,16 @@ export const useSoundEffects = () => {
   const isMuted = useStore((state) => state.isMuted);
 
   const hoverSound = useMemo(() => {
-    // Using a more standard UI sound URL
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+    const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-20.mp3');
     audio.volume = 0.15;
+    audio.onerror = (e) => console.error('Hover audio source error:', e);
     return audio;
   }, []);
 
   const clickSound = useMemo(() => {
-    // Using a more standard UI click sound URL
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+    const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
     audio.volume = 0.4;
+    audio.onerror = (e) => console.error('Click audio source error:', e);
     return audio;
   }, []);
 

@@ -82,11 +82,27 @@ export const renderDescription = (text: string, linkColor: string = '#6495ed') =
       });
     }
 
+    const isBullet = line.trim().startsWith('•') || line.trim().startsWith('-');
+
     return (
-      <span key={i}>
-        {parts}
-        {i < text.split('\n').length - 1 && <br />}
-      </span>
+      <div key={i} style={{ 
+        display: isBullet ? 'list-item' : 'block',
+        listStyleType: 'none',
+        paddingLeft: isBullet ? '20px' : '0',
+        position: 'relative',
+        margin: 0
+      }}>
+        {isBullet && (
+          <span style={{ position: 'absolute', left: '5px' }}>•</span>
+        )}
+        {parts.map((p, idx) => {
+          if (idx === 0 && typeof p === 'string' && isBullet) {
+             const trimmed = p.trim();
+             return trimmed.substring(1).trim();
+          }
+          return p;
+        })}
+      </div>
     );
   });
 };

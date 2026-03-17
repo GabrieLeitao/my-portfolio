@@ -74,7 +74,7 @@ const About: React.FC = () => {
           gap: 40px;
           width: 100%;
         }
-        @media (max-width: 768px) {
+        @media screen and (max-width: 768px) {
           .about-grid {
             grid-template-columns: 1fr;
             gap: 30px;

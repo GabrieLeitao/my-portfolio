@@ -4,7 +4,7 @@ import { Experience } from '../types';
 
 export const personalInfo = {
   name: 'Gabriel Leitão',
-  title: 'BSc Aerospace Engineering | Embedded Software | Machine Learning',
+  title: 'BSc Aerospace Engineering',
   email: 'gabriel.leitao@tecnico.ulisboa.pt',
   phone: '',
   location: 'Lisbon, Portugal',
@@ -73,7 +73,7 @@ export const experiences: Experience[] = [
   {
     name: 'BSc Aerospace Engineering',
     type: 'main-education',
-    description: 'Currently finishing my Bachelor\'s degree of Science in Aerospace Engineering at Instituto Superior Técnico, Lisboa, Portugal.',
+    description: 'Currently finishing my Bachelor\'s degree of Science in Aerospace Engineering at Instituto Superior Técnico, Lisboa, Portugal.\n- Awarded Academic Excellence Diploma (2023/2024)',
     startDate: '11/09/2023',
     endDate: 'Present',
     technologies: ['SolidWorks', 'Xilinx Vivado', 'MATLAB', 'Simulink'],

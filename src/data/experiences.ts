@@ -36,7 +36,7 @@ export const experiences: Experience[] = [
   {
     name: 'Coordinator @ AfterSchool by TreeTree2',
     type: 'job',
-    description: 'TreeTree2 is a non-profit organisation, enabling students to explore their curiosity outside basic and secondary school. \n \
+    description: 'TreeTree2 is a non-profit organisation that enables students to explore their curiosity outside basic and secondary school. \n \
                   TreeTree2: [www.treetree2.org](treetree2.org) \n \
                   AfterSchool: [treetree2.school](treetree2.school)',
     startDate: '26/12/2025',

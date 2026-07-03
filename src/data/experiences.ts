@@ -73,9 +73,9 @@ export const experiences: Experience[] = [
   {
     name: 'BSc Aerospace Engineering',
     type: 'main-education',
-    description: 'Currently finishing my Bachelor\'s degree of Science in Aerospace Engineering at Instituto Superior Técnico, Lisboa, Portugal.\n- Awarded Academic Excellence Diploma (2023/2024)',
+    description: 'Bachelor\'s degree of Science in Aerospace Engineering at Instituto Superior Técnico, Lisboa, Portugal.\n- Awarded Academic Excellence Diploma (2023/2024)',
     startDate: '11/09/2023',
-    endDate: 'Present',
+    endDate: '03/07/26',
     technologies: ['SolidWorks', 'Xilinx Vivado', 'MATLAB', 'Simulink'],
     radius: 1.8,
     distanceFromStar: 14,
